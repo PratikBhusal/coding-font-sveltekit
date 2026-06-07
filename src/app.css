@@ -39,6 +39,16 @@
   src: url('/fonts/CascadiaCode-Italic.woff2') format('woff2');
 }
 
+/* Load Paper Mono */
+@font-face {
+  font-family: 'Paper Mono';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/paper-design/paper-mono@main/fonts/webfonts/PaperMono%5Bwght%5D.woff2')
+    format('woff2');
+}
+
 /* Load SF Mono */
 @font-face {
   font-family: 'SF Mono';

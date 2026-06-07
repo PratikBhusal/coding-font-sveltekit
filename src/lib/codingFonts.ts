@@ -93,6 +93,16 @@ const codingFonts = [
       'https://github.com/microsoft/cascadia-code/releases/download/v2407.24/CascadiaCode-2407.24.zip'
   },
   {
+    family: 'Paper Mono',
+    variants: ['regular'],
+    files: {
+      regular:
+        'https://cdn.jsdelivr.net/gh/paper-design/paper-mono@main/fonts/webfonts/PaperMono%5Bwght%5D.woff2'
+    },
+    siteUrl: 'https://github.com/paper-design/paper-mono',
+    downloadUrl: 'https://github.com/paper-design/paper-mono'
+  },
+  {
     family: 'SF Mono',
     variants: ['regular', 'italic'],
     files: {
