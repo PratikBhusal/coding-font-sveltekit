@@ -2,11 +2,6 @@
 
 # TODO: New Fonts
 
-[Monaspace Neon](https://fontsource.org/fonts/monaspace-neon)
-
-Note: For Monaspace fonts, you will need to have the opentype feature `cv01=2`
-to get the slashed 0.
-
 [0xProto](https://github.com/0xType/0xProto)
 
 [Commit Mono](https://github.com/eigilnikolajsen/commit-mono)

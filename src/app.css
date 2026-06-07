@@ -73,6 +73,25 @@
     format('woff2');
 }
 
+
+/* Load Monaspace Neon */
+@font-face {
+  font-family: 'Monaspace Neon';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/githubnext/monaspace@main/fonts/Web%20Fonts/Variable%20Web%20Fonts/Monaspace%20Neon/Monaspace%20Neon%20Var.woff2')
+    format('woff2');
+}
+@font-face {
+  font-family: 'Monaspace Neon';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/githubnext/monaspace@main/fonts/Web%20Fonts/Static%20Web%20Fonts/Monaspace%20Neon/MonaspaceNeon-Italic.woff2')
+    format('woff2');
+}
+
 /* Load Lilex */
 @font-face {
   font-family: 'Lilex';
