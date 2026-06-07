@@ -6,6 +6,7 @@ import {
   IconMaximize,
   IconBoxAlignRightFilled
 } from '$lib';
+import { getFontStyle } from './fontFeatures';
 
 export let fonts;
 </script>
@@ -28,7 +29,7 @@ export let fonts;
           }}"
           class:!variant-ghost-primary="{$fontFamily === font.family}">
           <td
-            style="font-family: '{font.family}'"
+            style="{getFontStyle(font)}"
             class="max-w-[9rem] truncate !whitespace-nowrap"
             >{$showName ? font.family : 'ABC abc 123'}</td>
           <td class="hidden md:table-cell">

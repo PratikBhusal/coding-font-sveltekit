@@ -15,6 +15,7 @@ import {
   createGame,
   createConfetti
 } from '$lib';
+import { getFontStyle } from '$lib/fontFeatures';
 import { showName, selectedTheme, fontSize, fontLigatures } from '$lib/store';
 
 export let data;
@@ -99,7 +100,7 @@ function scrollToBracket() {
               {#if game.finalRound === index}
                 <div class="round-winner">
                   <WinnerBadge>
-                    <span style="font-family: '{round[0].winner.family}'">
+                    <span style="{getFontStyle(round[0].winner)}">
                       {round[0].winner.family}
                     </span>
                   </WinnerBadge>
@@ -115,7 +116,7 @@ function scrollToBracket() {
                           class="{bracket?.winner?.family == font.family
                             ? 'variant-ghost-primary'
                             : 'variant-soft-surface'}">
-                          <span style="font-family: '{font.family}'">
+                          <span style="{getFontStyle(font)}">
                             {$showName ? font.family : 'ABC abc 123'}
                           </span>
                         </PlayerBadge>
@@ -190,7 +191,7 @@ function scrollToBracket() {
           </div>
           <div
             class="my-4 text-4xl md:text-6xl"
-            style="font-family: '{currentBracket?.winner.family}'">
+            style="{getFontStyle(currentBracket?.winner)}">
             {currentBracket?.winner.family}
           </div>
           <div class="variant-soft-surface btn-group self-center">

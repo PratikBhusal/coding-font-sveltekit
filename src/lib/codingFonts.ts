@@ -320,6 +320,7 @@ const codingFonts = [
       '800italic':
         'http://fonts.gstatic.com/s/jetbrainsmono/v12/tDba2o-flEEny0FZhsfKu5WU4xD-IQ-PuZJJXxfpAO8LeVOQk6OThxPA.ttf'
     },
+    openTypeFeatures: ['zero'],
     siteUrl: 'https://fonts.google.com/specimen/JetBrains+Mono',
     downloadUrl: 'https://fonts.google.com/download?family=JetBrains%20Mono'
   },

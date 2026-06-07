@@ -6,6 +6,8 @@ import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
 import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
 import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
 import { monacoThemes } from './monacoThemes';
+import codingFonts from './codingFonts';
+import { getFontFeatures } from './fontFeatures';
 
 export let fontFamily = 'JetBrains Mono';
 export let fontSize = 20;
@@ -49,6 +51,10 @@ isMultipleOf(l1I, oO0); // Output related to one`;
 let editor;
 let editorContainer;
 
+$: currentFont = codingFonts.find((font) => font.family === fontFamily);
+$: fontFeatures = getFontFeatures(currentFont);
+$: monacoFontLigatures = fontFeatures || fontLigatures;
+
 onMount(async () => {
   self.MonacoEnvironment = {
     getWorker(_, label) {
@@ -77,7 +83,7 @@ onMount(async () => {
     theme: 'vs-dark',
     fontFamily: `'${fontFamily}', monospace`,
     fontSize: fontSize,
-    fontLigatures: fontLigatures,
+    fontLigatures: monacoFontLigatures,
     automaticLayout: true,
     minimap: {
       enabled: true
@@ -99,7 +105,7 @@ $: if (editor) {
 }
 
 $: if (editor) {
-  editor.updateOptions({ fontLigatures: fontLigatures });
+  editor.updateOptions({ fontLigatures: monacoFontLigatures });
 }
 </script>
 
