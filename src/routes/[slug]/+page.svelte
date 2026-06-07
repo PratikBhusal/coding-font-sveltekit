@@ -28,8 +28,16 @@ import {
 export let data;
 let fonts = data.fonts;
 let sidebarComponent: HTMLDivElement;
+let initializedComparisonFamily = '';
 
 $: currentFont = data.font;
+$: if (
+  data.compareFont &&
+  initializedComparisonFamily !== data.compareFont.family
+) {
+  $fontFamilyRight = data.compareFont.family;
+  initializedComparisonFamily = data.compareFont.family;
+}
 
 $: if (currentFont && sidebarComponent) {
   $menuOpen = true;
@@ -50,6 +58,12 @@ function getFontByFamilyName(familyName: string) {
 
 function getFontPath(familyName: string) {
   return `${base}/${encodeURIComponent(familyName.replace(/\s+/g, ''))}`;
+}
+
+function getComparisonPath(familyName: string) {
+  return `${getFontPath(currentFont.family)}/${encodeURIComponent(
+    familyName.replace(/\s+/g, '')
+  )}`;
 }
 </script>
 
@@ -164,6 +178,7 @@ function getFontPath(familyName: string) {
                     $fontFamilyRight}"
                   on:click|stopPropagation="{() => {
                     $fontFamilyRight = font.family;
+                    goto(getComparisonPath(font.family));
                   }}">
                   <IconBoxAlignRightFilled size="16" />
                   <span>Compare</span>
