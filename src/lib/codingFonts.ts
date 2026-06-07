@@ -103,6 +103,18 @@ const codingFonts = [
     downloadUrl: 'https://github.com/paper-design/paper-mono'
   },
   {
+    family: 'Commit Mono',
+    variants: ['regular', 'italic'],
+    files: {
+      regular:
+        'https://cdn.jsdelivr.net/gh/eigilnikolajsen/commit-mono@main/src/fonts/fontlab/CommitMonoV143-VF.woff2',
+      italic:
+        'https://cdn.jsdelivr.net/gh/eigilnikolajsen/commit-mono@main/src/fonts/fontlab/CommitMonoV143-400Italic.otf'
+    },
+    siteUrl: 'https://commitmono.com/',
+    downloadUrl: 'https://github.com/eigilnikolajsen/commit-mono'
+  },
+  {
     family: 'SF Mono',
     variants: ['regular', 'italic'],
     files: {
