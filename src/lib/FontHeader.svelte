@@ -2,7 +2,9 @@
 import { base } from '$app/paths';
 import { IconDownload, IconExternalLink, IconMaximize } from '$lib';
 import { showName } from '$lib/store';
-export let font: any;
+import type { CodingFont } from './codingFonts';
+
+export let font: CodingFont;
 
 $: fontPath = `${base}/${encodeURIComponent(font.family.replace(/\s+/g, ''))}`;
 </script>

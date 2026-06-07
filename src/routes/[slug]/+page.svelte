@@ -24,8 +24,9 @@ import {
   menuOpen,
   searchTerm
 } from '$lib/store';
+import type { CodingFont } from '$lib';
 
-export let data;
+export let data: { fonts: CodingFont[]; font: CodingFont; compareFont?: CodingFont };
 let fonts = data.fonts;
 let sidebarComponent: HTMLDivElement;
 let initializedComparisonFamily = '';

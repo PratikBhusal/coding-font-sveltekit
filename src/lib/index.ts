@@ -20,6 +20,7 @@ import WinnerBadge from './WinnerBadge.svelte';
 import MonacoEditor from './MonacoEditor.svelte';
 import { monacoThemeNames, monacoThemes } from './monacoThemes';
 import codingFonts from './codingFonts';
+import type { CodingFont } from './codingFonts';
 
 import { createGame, createConfetti } from './game';
 
@@ -54,3 +55,5 @@ export {
   createGame,
   createConfetti
 };
+
+export type { CodingFont };

@@ -1,8 +1,9 @@
-type FontFeatureConfig = {
-  family: string;
-  openTypeFeatures?: string[];
-  ligatureFeatures?: string[];
-};
+import type { CodingFont } from './codingFonts';
+
+type FontFeatureConfig = Pick<
+  CodingFont,
+  'family' | 'openTypeFeatures' | 'ligatureFeatures'
+>;
 
 export function getFontFeatures(
   font?: Pick<FontFeatureConfig, 'openTypeFeatures' | 'ligatureFeatures'>,

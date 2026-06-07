@@ -15,8 +15,9 @@ import {
   IconBoxAlignRightFilled
 } from '$lib';
 import { getFontStyle } from './fontFeatures';
+import type { CodingFont } from './codingFonts';
 
-export let fonts;
+export let fonts: CodingFont[] = [];
 
 function getFontPath(family: string) {
   return `${base}/${encodeURIComponent(family.replace(/\s+/g, ''))}`;

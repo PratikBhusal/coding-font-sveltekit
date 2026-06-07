@@ -1,4 +1,15 @@
-const codingFonts = [
+export interface CodingFont {
+  family: string;
+  variants: string[];
+  files: Record<string, string>;
+  siteUrl: string;
+  downloadUrl: string;
+  includeInInitialTournament?: boolean;
+  openTypeFeatures?: string[];
+  ligatureFeatures?: string[];
+}
+
+const codingFonts: CodingFont[] = [
   {
     family: 'Anonymous Pro',
     variants: ['regular', 'italic', '700', '700italic'],

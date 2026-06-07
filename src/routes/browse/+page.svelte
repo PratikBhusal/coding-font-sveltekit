@@ -19,8 +19,9 @@ import {
   editorLanguage,
   searchTerm
 } from '$lib/store';
+import type { CodingFont } from '$lib';
 
-export let data;
+export let data: { fonts: CodingFont[] };
 let { fonts } = data;
 
 function getFontByFamilyName(familyName: string) {
