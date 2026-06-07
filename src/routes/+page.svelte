@@ -49,12 +49,13 @@ $: filteredTournamentFonts = fonts.filter((font) =>
 );
 $: canStartGame = selectedTournamentFonts.length >= 2;
 
-onMount(() => {
+onMount(async () => {
   if ($tournamentFontFamilies === null) {
-    $tournamentFontFamilies = fonts
-      .filter((font) => font.includeInInitialTournament)
-      .map((font) => font.family);
+    $tournamentFontFamilies = fonts.map((font) => font.family);
   }
+
+  await tick();
+  startGame();
 
   function handleKeydown(event) {
     if (currentBracket?.players?.length) {
@@ -302,14 +303,14 @@ function scrollToBracket() {
           bind:value="{fontSubsetSearch}" />
         <div class="flex flex-wrap gap-2">
           <button
-            class="variant-soft-surface btn min-w-36 flex-1"
+            class="variant-soft-surface btn flex-1"
             on:click="{selectAllTournamentFonts}"
-            >Select all</button>
+            >All</button>
           <button
-            class="variant-soft-surface btn min-w-36 flex-1"
-            on:click="{selectDefaultTournamentFonts}">Select Defaults</button>
+            class="variant-soft-surface btn flex-1"
+            on:click="{selectDefaultTournamentFonts}">Curated</button>
           <button
-            class="variant-soft-surface btn min-w-36 flex-1"
+            class="variant-soft-surface btn flex-1"
             on:click="{clearTournamentFonts}"
             >Clear</button>
         </div>
@@ -533,17 +534,6 @@ function scrollToBracket() {
               <p class="text-center">COORDINATOR</p>
             </div>
           </div>
-        </div>
-      </div>
-    {:else}
-      <div
-        class="bg-surface-50-900-token border-surface-900-50-token col-span-1 row-span-2 flex items-center justify-center border-4 p-6 text-center md:col-span-2 md:row-span-1">
-        <div class="flex max-w-xl flex-col gap-4">
-          <h2 class="h2">Select fonts to start ranking</h2>
-          <p class="opacity-70">
-            Choose at least two fonts from the sidebar, then start the
-            tournament.
-          </p>
         </div>
       </div>
     {/if}
