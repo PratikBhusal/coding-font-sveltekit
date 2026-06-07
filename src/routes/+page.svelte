@@ -75,13 +75,20 @@ onMount(async () => {
   };
 });
 
-function startGame() {
+function startGame(closeSidebar = false) {
   if (!canStartGame) {
     return;
   }
 
+  // Capture old game state before replacing it so
+  // the first start is not treated as a restart.
+  const isRestarting = Boolean(game);
   game = createGame(selectedTournamentFonts);
   currentBracket = game.startGame();
+
+  if (isRestarting && closeSidebar) {
+    $menuOpen = false;
+  }
 }
 
 function selectAllTournamentFonts() {
@@ -346,9 +353,14 @@ function scrollToBracket() {
         </div>
       </div>
       <button
-        class="variant-filled-primary btn"
+        class="variant-filled-primary btn lg:hidden"
         disabled="{!canStartGame}"
-        on:click="{startGame}"
+        on:click="{() => startGame(true)}"
+        >{game ? 'Restart Game' : 'Start Game'}</button>
+      <button
+        class="variant-filled-primary btn hidden lg:flex"
+        disabled="{!canStartGame}"
+        on:click="{() => startGame(false)}"
         >{game ? 'Restart Game' : 'Start Game'}</button>
       {#if currentBracket?.winner}
         <button
@@ -425,7 +437,7 @@ function scrollToBracket() {
         <button
           class="variant-filled-primary btn"
           disabled="{!canStartGame}"
-          on:click="{startGame}"
+          on:click="{() => startGame(false)}"
           >{game ? 'Restart Game' : 'Start Game'}</button>
         {#if currentBracket?.winner}
           <button
