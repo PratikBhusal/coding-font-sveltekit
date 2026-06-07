@@ -45,3 +45,6 @@ export const sidebarWidth: Writable<number> = localStorageStore(
 );
 
 export const showName: Writable<boolean> = localStorageStore('showName', false);
+
+export const tournamentFontFamilies: Writable<string[] | null> =
+  localStorageStore('tournamentFontFamilies', null);

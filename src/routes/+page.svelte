@@ -24,7 +24,8 @@ import {
   fontLigatures,
   fontOpenTypeFeatures,
   editorLanguage,
-  menuOpen
+  menuOpen,
+  tournamentFontFamilies
 } from '$lib/store';
 
 export let data;
@@ -33,9 +34,25 @@ let game;
 let currentBracket;
 let leftButton, rightButton;
 let tournamentBracketElement: HTMLElement;
+let fontSubsetSearch = '';
+let fontSubsetImportText = '';
+let fontSubsetImportMessage = '';
+
+$: selectedTournamentFamilies = $tournamentFontFamilies ?? [];
+$: selectedTournamentFamilySet = new Set(selectedTournamentFamilies);
+$: selectedTournamentFonts = fonts.filter((font) =>
+  selectedTournamentFamilySet.has(font.family)
+);
+$: filteredTournamentFonts = fonts.filter((font) =>
+  font.family.toLowerCase().includes(fontSubsetSearch.trim().toLowerCase())
+);
+$: canStartGame = selectedTournamentFonts.length >= 2;
 
 onMount(() => {
-  startGame();
+  if ($tournamentFontFamilies === null) {
+    $tournamentFontFamilies = fonts.map((font) => font.family);
+  }
+
   function handleKeydown(event) {
     if (currentBracket?.players?.length) {
       if (event.key === 'ArrowLeft' || event.keyCode === 37) {
@@ -55,8 +72,57 @@ onMount(() => {
 });
 
 function startGame() {
-  game = createGame(fonts);
+  if (!canStartGame) {
+    return;
+  }
+
+  game = createGame(selectedTournamentFonts);
   currentBracket = game.startGame();
+}
+
+function selectAllTournamentFonts() {
+  $tournamentFontFamilies = fonts.map((font) => font.family);
+}
+
+function clearTournamentFonts() {
+  $tournamentFontFamilies = [];
+}
+
+function toggleTournamentFont(family: string) {
+  if (selectedTournamentFamilySet.has(family)) {
+    $tournamentFontFamilies = selectedTournamentFamilies.filter(
+      (selectedFamily) => selectedFamily !== family
+    );
+  } else {
+    $tournamentFontFamilies = [...selectedTournamentFamilies, family];
+  }
+}
+
+function importTournamentFonts() {
+  const fontByNormalizedFamily = new Map(
+    fonts.map((font) => [font.family.trim().toLowerCase(), font.family])
+  );
+  const importedFamilies = fontSubsetImportText
+    .split(/[\n,;]+/)
+    .map((family) => family.trim())
+    .filter(Boolean);
+  const matchedFamilies = [];
+  const missingFamilies = [];
+
+  importedFamilies.forEach((family) => {
+    const matchedFamily = fontByNormalizedFamily.get(family.toLowerCase());
+
+    if (matchedFamily) {
+      matchedFamilies.push(matchedFamily);
+    } else {
+      missingFamilies.push(family);
+    }
+  });
+
+  $tournamentFontFamilies = Array.from(new Set(matchedFamilies));
+  fontSubsetImportMessage = `${matchedFamilies.length} matched${
+    missingFamilies.length ? `, ${missingFamilies.length} not found` : ''
+  }.`;
 }
 
 function getFontByFamilyName(familyName: string) {
@@ -213,8 +279,60 @@ function scrollToBracket() {
   </svelte:fragment>
   <svelte:fragment slot="sidebarLeft">
     <Sidebar>
-      <button class="variant-filled-primary btn" on:click="{startGame}"
-        >Restart Game</button>
+      <div class="flex flex-col gap-2 px-2">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-sm font-bold uppercase tracking-wide opacity-70"
+            >Font Pool</span>
+          <span class="text-sm opacity-70"
+            >{selectedTournamentFonts.length}/{fonts.length}</span>
+        </div>
+        <input
+          class="input"
+          type="search"
+          placeholder="Search fonts"
+          bind:value="{fontSubsetSearch}" />
+        <div class="grid grid-cols-2 gap-2">
+          <button class="variant-soft-surface btn" on:click="{selectAllTournamentFonts}"
+            >Select all</button>
+          <button class="variant-soft-surface btn" on:click="{clearTournamentFonts}"
+            >Clear</button>
+        </div>
+        <textarea
+          class="textarea h-24"
+          placeholder="Paste font names"
+          bind:value="{fontSubsetImportText}"></textarea>
+        <button
+          class="variant-soft-surface btn"
+          disabled="{!fontSubsetImportText.trim()}"
+          on:click="{importTournamentFonts}">Import list</button>
+        {#if fontSubsetImportMessage}
+          <p class="text-sm opacity-70">{fontSubsetImportMessage}</p>
+        {/if}
+        <div class="table-container max-h-80 overflow-auto rounded-none">
+          {#each filteredTournamentFonts as font (font.family)}
+            <label
+              class="hover:variant-soft-surface flex cursor-pointer items-center gap-2 px-2 py-1">
+              <input
+                class="checkbox"
+                type="checkbox"
+                checked="{selectedTournamentFamilySet.has(font.family)}"
+                on:change="{() => toggleTournamentFont(font.family)}" />
+              <span
+                class="truncate"
+                style="{getFontStyle(
+                  font,
+                  $fontOpenTypeFeatures,
+                  $fontLigatures
+                )}">{font.family}</span>
+            </label>
+          {/each}
+        </div>
+      </div>
+      <button
+        class="variant-filled-primary btn"
+        disabled="{!canStartGame}"
+        on:click="{startGame}"
+        >{game ? 'Restart Game' : 'Start Game'}</button>
       {#if currentBracket?.winner}
         <button
           class="variant-filled-primary btn"
@@ -287,8 +405,11 @@ function scrollToBracket() {
   <svelte:fragment slot="pageHeader">
     <Controls>
       {#if !$menuOpen}
-        <button class="variant-filled-primary btn" on:click="{startGame}"
-          >Restart Game</button>
+        <button
+          class="variant-filled-primary btn"
+          disabled="{!canStartGame}"
+          on:click="{startGame}"
+          >{game ? 'Restart Game' : 'Start Game'}</button>
         {#if currentBracket?.winner}
           <button
             class="variant-filled-primary btn"
@@ -396,6 +517,17 @@ function scrollToBracket() {
               <p class="text-center">COORDINATOR</p>
             </div>
           </div>
+        </div>
+      </div>
+    {:else}
+      <div
+        class="bg-surface-50-900-token border-surface-900-50-token col-span-1 row-span-2 flex items-center justify-center border-4 p-6 text-center md:col-span-2 md:row-span-1">
+        <div class="flex max-w-xl flex-col gap-4">
+          <h2 class="h2">Select fonts to start ranking</h2>
+          <p class="opacity-70">
+            Choose at least two fonts from the sidebar, then start the
+            tournament.
+          </p>
         </div>
       </div>
     {/if}

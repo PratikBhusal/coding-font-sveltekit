@@ -23,6 +23,8 @@ export function createConfetti(size = 'big', position = { x: 0.5, y: 0.5 }) {
 }
 
 export function createGame(initialPlayers) {
+  const players = [...initialPlayers];
+
   function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -30,7 +32,7 @@ export function createGame(initialPlayers) {
     }
   }
 
-  shuffleArray(initialPlayers);
+  shuffleArray(players);
 
   const tournament = {
     rounds: [],
@@ -79,7 +81,7 @@ export function createGame(initialPlayers) {
           ? this.rounds[this.currentRound - 1]
               .filter((matchup) => matchup.winner)
               .map((matchup) => matchup.winner)
-          : initialPlayers;
+          : players;
 
       for (let i = 0; i < winners.length; i += 2) {
         this.rounds[this.currentRound] = this.rounds[this.currentRound] || [];
