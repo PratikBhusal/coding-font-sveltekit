@@ -45,6 +45,7 @@ import TwilightTheme from 'monaco-themes/themes/Twilight.json';
 import VibrantInkTheme from 'monaco-themes/themes/Vibrant Ink.json';
 import XcodeDefaultTheme from 'monaco-themes/themes/Xcode_default.json';
 import ZenburnesqueTheme from 'monaco-themes/themes/Zenburnesque.json';
+// TODO: Add my own custom monaco theme
 
 const monacoThemes = [
   {
