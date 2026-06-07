@@ -17,7 +17,8 @@ const sortedMonacoThemes = monacoThemeNames.sort((a, b) => {
 </script>
 
 <div
-  class="bg-surface-100-800-token flex flex-row gap-4 overflow-x-auto whitespace-nowrap border-b border-surface-400 px-4 py-2 dark:border-surface-500">
+  class="bg-surface-100-800-token flex w-full flex-row gap-4 overflow-x-auto whitespace-nowrap border-b border-surface-400 px-4 py-2 dark:border-surface-500">
+  <slot />
   <label class="flex items-center space-x-2">
     <input class="checkbox" type="checkbox" bind:checked="{$showName}" />
     <span>Show Name</span>

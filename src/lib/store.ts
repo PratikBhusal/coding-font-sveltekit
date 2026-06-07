@@ -27,4 +27,11 @@ export const searchTerm: Writable<string> = localStorageStore('searchTerm', '');
 
 export const menuOpen: Writable<boolean> = localStorageStore('menuOpen', false);
 
+export const DEFAULT_SIDEBAR_WIDTH = 480;
+
+export const sidebarWidth: Writable<number> = localStorageStore(
+  'sidebarWidth',
+  DEFAULT_SIDEBAR_WIDTH
+);
+
 export const showName: Writable<boolean> = localStorageStore('showName', false);

@@ -15,6 +15,7 @@ import {
   fontFamily,
   fontFamilyRight,
   fontLigatures,
+  menuOpen,
   searchTerm
 } from '$lib/store';
 
@@ -35,7 +36,9 @@ $: if ($searchTerm) {
 </script>
 
 <AppShell
-  slotSidebarLeft="flex relative resize-x min-w-0 w-0 lg:w-[30rem] lg:min-w-[16rem] !overflow-visible"
+  slotSidebarLeft="flex relative min-w-0 {$menuOpen
+    ? 'w-[calc(100vw-4rem)] resize-x overflow-auto sm:w-[24rem] lg:w-[30rem] lg:min-w-[12rem] lg:max-w-[100vw]'
+    : 'w-0'}"
   slotHeader="z-30">
   <svelte:fragment slot="header">
     <Header />

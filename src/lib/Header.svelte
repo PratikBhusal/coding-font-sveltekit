@@ -2,23 +2,16 @@
 import { base } from '$app/paths';
 import { page } from '$app/stores';
 import { TabGroup, TabAnchor } from '@skeletonlabs/skeleton';
-import { IconMenu, Logo, ThemeSwitch } from '$lib';
-import { menuOpen } from '$lib/store';
+import { Logo, ThemeSwitch } from '$lib';
 
 $: gamePath = `${base}/`;
 $: browsePath = `${base}/browse`;
+
 </script>
 
 <div
   class="bg-surface-100-800-token flex flex-row items-center justify-between gap-4 border-b border-surface-400 p-4 dark:border-surface-700">
   <div class="flex items-center justify-center gap-4">
-    <button
-      class="variant-soft btn-icon lg:hidden"
-      on:click="{() => {
-        $menuOpen = !$menuOpen;
-      }}">
-      <IconMenu size="24" />
-    </button>
     <a href="{gamePath}"><Logo class="h-[3rem] w-auto" /></a>
   </div>
 

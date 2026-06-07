@@ -17,7 +17,13 @@ import {
   createConfetti
 } from '$lib';
 import { getFontStyle } from '$lib/fontFeatures';
-import { showName, selectedTheme, fontSize, fontLigatures } from '$lib/store';
+import {
+  showName,
+  selectedTheme,
+  fontSize,
+  fontLigatures,
+  menuOpen
+} from '$lib/store';
 
 export let data;
 let { fonts } = data;
@@ -89,7 +95,9 @@ function scrollToBracket() {
 </script>
 
 <AppShell
-  slotSidebarLeft="flex relative resize-x min-w-0 w-0 lg:w-[30rem] lg:min-w-[16rem] !overflow-visible"
+  slotSidebarLeft="flex relative min-w-0 {$menuOpen
+    ? 'w-[calc(100vw-4rem)] resize-x overflow-auto sm:w-[24rem] lg:w-[30rem] lg:min-w-[12rem] lg:max-w-[100vw]'
+    : 'w-0'}"
   slotHeader="z-30">
   <svelte:fragment slot="header">
     <Header />
@@ -142,7 +150,12 @@ function scrollToBracket() {
     </Sidebar>
   </svelte:fragment>
   <svelte:fragment slot="pageHeader">
-    <Controls />
+    <Controls>
+      {#if !$menuOpen}
+        <button class="variant-filled-primary btn" on:click="{startGame}"
+          >Restart Game</button>
+      {/if}
+    </Controls>
   </svelte:fragment>
   <div
     class="bg-surface-50-900-token grid h-full grid-cols-1 grid-rows-2 gap-4 p-4 md:grid-cols-2 md:grid-rows-1">

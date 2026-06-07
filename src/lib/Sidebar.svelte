@@ -1,7 +1,16 @@
 <script lang="ts">
-import { menuOpen } from '$lib/store';
+import {
+  DEFAULT_SIDEBAR_WIDTH,
+  menuOpen,
+  sidebarWidth
+} from '$lib/store';
 
 let sidebar;
+let shellSidebar: HTMLElement | null = null;
+let startX = 0;
+let startWidth = 0;
+
+const minSidebarWidth = 192;
 
 export function scrollToTop() {
   sidebar.scrollTo({
@@ -9,11 +18,69 @@ export function scrollToTop() {
     behavior: 'smooth'
   });
 }
+
+function clampSidebarWidth(width: number) {
+  return Math.min(Math.max(width, minSidebarWidth), window.innerWidth);
+}
+
+function syncShellSidebarWidth() {
+  if (!shellSidebar) return;
+
+  shellSidebar.style.width = $menuOpen ? `${$sidebarWidth}px` : '0px';
+  shellSidebar.style.minWidth = $menuOpen ? `${minSidebarWidth}px` : '0px';
+  shellSidebar.style.maxWidth = `${window.innerWidth}px`;
+}
+
+function handlePointerMove(event: PointerEvent) {
+  $sidebarWidth = clampSidebarWidth(startWidth + event.clientX - startX);
+  syncShellSidebarWidth();
+}
+
+function handlePointerUp() {
+  window.removeEventListener('pointermove', handlePointerMove);
+  window.removeEventListener('pointerup', handlePointerUp);
+}
+
+function startResize(event: PointerEvent) {
+  $menuOpen = true;
+  startX = event.clientX;
+  startWidth = shellSidebar?.getBoundingClientRect().width || $sidebarWidth;
+  window.addEventListener('pointermove', handlePointerMove);
+  window.addEventListener('pointerup', handlePointerUp);
+}
+
+function resetSidebarWidth() {
+  $menuOpen = true;
+  $sidebarWidth = DEFAULT_SIDEBAR_WIDTH;
+  syncShellSidebarWidth();
+}
+
+$: if (sidebar) {
+  shellSidebar = sidebar.parentElement;
+  syncShellSidebarWidth();
+}
+
+$: {
+  $menuOpen;
+  $sidebarWidth;
+  syncShellSidebarWidth();
+}
 </script>
 
 <div
   bind:this="{sidebar}"
-  class="bg-surface-100-800-token absolute z-20 flex h-full w-[calc(100vw-4rem)] flex-col gap-4 overflow-y-auto overflow-x-visible border-r border-surface-400 p-4 dark:border-surface-500 sm:w-[30rem] lg:static lg:w-full"
-  class:hide="{!$menuOpen}">
+  class="bg-surface-100-800-token absolute z-20 flex h-full w-full flex-col gap-4 overflow-y-auto overflow-x-hidden border-r border-surface-400 p-4 pr-5 dark:border-surface-500 lg:static"
+  class:hidden="{!$menuOpen}">
   <slot />
+  <button
+    type="button"
+    aria-label="Resize sidebar"
+    title="Drag to resize. Double-click to reset width."
+    class="group absolute right-0 top-0 hidden h-full w-3 cursor-col-resize touch-none lg:block"
+    on:pointerdown="{startResize}"
+    on:dblclick="{resetSidebarWidth}">
+    <span
+      class="bg-surface-400-500-token group-hover:bg-primary-500 group-active:bg-primary-600 absolute right-0 top-0 h-full w-1">
+    </span>
+  </button>
 </div>
