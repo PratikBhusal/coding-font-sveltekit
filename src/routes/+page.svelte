@@ -300,13 +300,17 @@ function scrollToBracket() {
           type="search"
           placeholder="Search fonts"
           bind:value="{fontSubsetSearch}" />
-        <div class="grid grid-cols-3 gap-2">
-          <button class="variant-soft-surface btn" on:click="{selectAllTournamentFonts}"
+        <div class="flex flex-wrap gap-2">
+          <button
+            class="variant-soft-surface btn min-w-36 flex-1"
+            on:click="{selectAllTournamentFonts}"
             >Select all</button>
           <button
-            class="variant-soft-surface btn"
+            class="variant-soft-surface btn min-w-36 flex-1"
             on:click="{selectDefaultTournamentFonts}">Select Defaults</button>
-          <button class="variant-soft-surface btn" on:click="{clearTournamentFonts}"
+          <button
+            class="variant-soft-surface btn min-w-36 flex-1"
+            on:click="{clearTournamentFonts}"
             >Clear</button>
         </div>
         <textarea
