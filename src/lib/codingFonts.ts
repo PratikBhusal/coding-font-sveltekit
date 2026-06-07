@@ -918,4 +918,4 @@ const codingFonts = [
   }*/
 ];
 
-export default codingFonts;
+export default codingFonts.sort((a, b) => a.family.localeCompare(b.family));
