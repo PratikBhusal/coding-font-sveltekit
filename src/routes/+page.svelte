@@ -50,7 +50,9 @@ $: canStartGame = selectedTournamentFonts.length >= 2;
 
 onMount(() => {
   if ($tournamentFontFamilies === null) {
-    $tournamentFontFamilies = fonts.map((font) => font.family);
+    $tournamentFontFamilies = fonts
+      .filter((font) => font.includeInInitialTournament)
+      .map((font) => font.family);
   }
 
   function handleKeydown(event) {
@@ -82,6 +84,12 @@ function startGame() {
 
 function selectAllTournamentFonts() {
   $tournamentFontFamilies = fonts.map((font) => font.family);
+}
+
+function selectDefaultTournamentFonts() {
+  $tournamentFontFamilies = fonts
+    .filter((font) => font.includeInInitialTournament)
+    .map((font) => font.family);
 }
 
 function clearTournamentFonts() {
@@ -291,9 +299,12 @@ function scrollToBracket() {
           type="search"
           placeholder="Search fonts"
           bind:value="{fontSubsetSearch}" />
-        <div class="grid grid-cols-2 gap-2">
+        <div class="grid grid-cols-3 gap-2">
           <button class="variant-soft-surface btn" on:click="{selectAllTournamentFonts}"
             >Select all</button>
+          <button
+            class="variant-soft-surface btn"
+            on:click="{selectDefaultTournamentFonts}">Select Defaults</button>
           <button class="variant-soft-surface btn" on:click="{clearTournamentFonts}"
             >Clear</button>
         </div>

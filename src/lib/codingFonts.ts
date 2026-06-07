@@ -80,6 +80,7 @@ const codingFonts = [
   },
   {
     family: 'Cascadia Code',
+    includeInInitialTournament: true,
     variants: ['regular', 'italic'],
     files: {
       regular:
@@ -128,6 +129,7 @@ const codingFonts = [
   },
   {
     family: 'SF Mono',
+    includeInInitialTournament: true,
     variants: ['regular', 'italic'],
     files: {
       regular: 'https://developer.apple.com/fonts/',
@@ -138,6 +140,7 @@ const codingFonts = [
   },
   {
     family: 'Monaspace Argon',
+    includeInInitialTournament: true,
     variants: ['regular', 'italic'],
     files: {
       regular:
@@ -152,6 +155,7 @@ const codingFonts = [
   },
   {
     family: 'Monaspace Neon',
+    includeInInitialTournament: true,
     variants: ['regular', 'italic'],
     files: {
       regular:
@@ -244,6 +248,7 @@ const codingFonts = [
   },
   {
     family: 'Fira Code',
+    includeInInitialTournament: true,
     variants: ['300', 'regular', '500', '600', '700'],
     files: {
       '300':
@@ -330,6 +335,7 @@ const codingFonts = [
   },
   {
     family: 'Inconsolata',
+    includeInInitialTournament: true,
     variants: ['200', '300', 'regular', '500', '600', '700', '800', '900'],
     files: {
       '200':
@@ -354,6 +360,7 @@ const codingFonts = [
   },
   {
     family: 'JetBrains Mono',
+    includeInInitialTournament: true,
     variants: [
       '100',
       '200',
@@ -425,6 +432,7 @@ const codingFonts = [
   },
   {
     family: 'Noto Sans Mono',
+    includeInInitialTournament: true,
     variants: [
       '100',
       '200',
@@ -548,6 +556,7 @@ const codingFonts = [
   },
   {
     family: 'Roboto Mono',
+    includeInInitialTournament: true,
     variants: [
       '100',
       '200',
@@ -823,6 +832,7 @@ const codingFonts = [
   },
   {
     family: 'Geist Mono',
+    includeInInitialTournament: true,
     variants: [
       '100',
       '200',
@@ -861,6 +871,7 @@ const codingFonts = [
   },
   {
     family: 'Lilex',
+    includeInInitialTournament: true,
     variants: ['regular'],
     files: {
       regular:
