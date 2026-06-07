@@ -736,6 +736,44 @@ const codingFonts = [
       'https://fonts.google.com/download?family=Atkinson%20Hyperlegible%20Mono'
   },
   {
+    family: 'Geist Mono',
+    variants: [
+      '100',
+      '200',
+      '300',
+      'regular',
+      '500',
+      '600',
+      '700',
+      '800',
+      '900'
+    ],
+    files: {
+      '100':
+        'https://cdn.jsdelivr.net/gh/vercel/geist-font@main/fonts/GeistMono/variable/GeistMono%5Bwght%5D.ttf',
+      '200':
+        'https://cdn.jsdelivr.net/gh/vercel/geist-font@main/fonts/GeistMono/variable/GeistMono%5Bwght%5D.ttf',
+      '300':
+        'https://cdn.jsdelivr.net/gh/vercel/geist-font@main/fonts/GeistMono/variable/GeistMono%5Bwght%5D.ttf',
+      regular:
+        'https://cdn.jsdelivr.net/gh/vercel/geist-font@main/fonts/GeistMono/variable/GeistMono%5Bwght%5D.ttf',
+      '500':
+        'https://cdn.jsdelivr.net/gh/vercel/geist-font@main/fonts/GeistMono/variable/GeistMono%5Bwght%5D.ttf',
+      '600':
+        'https://cdn.jsdelivr.net/gh/vercel/geist-font@main/fonts/GeistMono/variable/GeistMono%5Bwght%5D.ttf',
+      '700':
+        'https://cdn.jsdelivr.net/gh/vercel/geist-font@main/fonts/GeistMono/variable/GeistMono%5Bwght%5D.ttf',
+      '800':
+        'https://cdn.jsdelivr.net/gh/vercel/geist-font@main/fonts/GeistMono/variable/GeistMono%5Bwght%5D.ttf',
+      '900':
+        'https://cdn.jsdelivr.net/gh/vercel/geist-font@main/fonts/GeistMono/variable/GeistMono%5Bwght%5D.ttf'
+    },
+    siteUrl: 'https://fonts.google.com/specimen/Geist+Mono',
+    downloadUrl: 'https://fonts.google.com/download?family=Geist%20Mono',
+    openTypeFeatures: ['ss11', 'ss03'],
+    ligatureFeatures: ['ss11']
+  },
+  {
     family: 'Lilex',
     variants: ['regular'],
     files: {
