@@ -2,7 +2,11 @@
 
 # TODO: New Fonts
 
-[0xProto](https://github.com/0xType/0xProto)
+https://font.subf.dev/en/playground/?normal
+
+https://github.com/arrowtype/recursive
+
+https://www.monolisa.dev/
 
 # create-svelte
 
