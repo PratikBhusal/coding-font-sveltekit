@@ -734,6 +734,17 @@ const codingFonts = [
     siteUrl: 'https://fonts.google.com/specimen/Atkinson+Hyperlegible+Mono',
     downloadUrl:
       'https://fonts.google.com/download?family=Atkinson%20Hyperlegible%20Mono'
+  },
+  {
+    family: 'Lilex',
+    variants: ['regular'],
+    files: {
+      regular:
+        'https://cdn.jsdelivr.net/gh/mishamyrt/Lilex@2.700/fonts/Lilex/variable/Lilex%5Bwght%5D.ttf'
+    },
+    siteUrl: 'https://fonts.google.com/specimen/Lilex',
+    downloadUrl: 'https://fonts.google.com/download?family=Lilex',
+    openTypeFeatures: ['zero', 'cv02', 'cv08', 'cv15']
   }
   /* {
     family: 'VT323',
@@ -758,7 +769,7 @@ const codingFonts = [
     },
     siteUrl: 'https://fonts.google.com/specimen/Fira+Mono',
     downloadUrl: 'https://fonts.google.com/download?family=Fira%20Mono'
-  }, 
+  },
   {
     family: 'Major Mono Display',
     variants: ['regular'],

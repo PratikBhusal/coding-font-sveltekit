@@ -23,6 +23,24 @@
     format('woff2');
 }
 
+/* Load Lilex */
+@font-face {
+  font-family: 'Lilex';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/mishamyrt/Lilex@2.700/fonts/Lilex/webfonts/Lilex-Regular.woff2')
+    format('woff2');
+}
+@font-face {
+  font-family: 'Lilex';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/mishamyrt/Lilex@2.700/fonts/Lilex/webfonts/Lilex-Italic.woff2')
+    format('woff2');
+}
+
 /* Load Hack */
 @font-face {
   font-family: 'Hack';
