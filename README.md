@@ -2,8 +2,6 @@
 
 # TODO: New Fonts
 
-[SF Mono](https://developer.apple.com/fonts/)
-
 [Monaspace Argon](https://fontsource.org/fonts/monaspace-argon)
 
 [Monaspace Neon](https://fontsource.org/fonts/monaspace-neon)

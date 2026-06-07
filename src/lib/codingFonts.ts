@@ -93,6 +93,16 @@ const codingFonts = [
       'https://github.com/microsoft/cascadia-code/releases/download/v2407.24/CascadiaCode-2407.24.zip'
   },
   {
+    family: 'SF Mono',
+    variants: ['regular', 'italic'],
+    files: {
+      regular: 'https://developer.apple.com/fonts/',
+      italic: 'https://developer.apple.com/fonts/'
+    },
+    siteUrl: 'https://developer.apple.com/fonts/',
+    downloadUrl: 'https://developer.apple.com/fonts/'
+  },
+  {
     family: 'B612 Mono',
     variants: ['regular', 'italic', '700', '700italic'],
     files: {
