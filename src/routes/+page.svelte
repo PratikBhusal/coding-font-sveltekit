@@ -31,6 +31,7 @@ let { fonts } = data;
 let game;
 let currentBracket;
 let leftButton, rightButton;
+let tournamentBracketElement: HTMLElement;
 
 onMount(() => {
   startGame();
@@ -63,6 +64,112 @@ function getFontByFamilyName(familyName: string) {
 
 function getFontPath(familyName: string) {
   return `${base}/${encodeURIComponent(familyName.replace(/\s+/g, ''))}`;
+}
+
+function inlineComputedStyles(source: Element, target: Element) {
+  const computedStyle = window.getComputedStyle(source);
+  const style = Array.from(computedStyle)
+    .map((property) => `${property}:${computedStyle.getPropertyValue(property)}`)
+    .join(';');
+
+  target.setAttribute('style', style);
+  if (target instanceof HTMLElement) {
+    target.style.color = computedStyle.color;
+    target.style.webkitTextFillColor = computedStyle.color;
+  }
+
+  Array.from(source.children).forEach((sourceChild, index) => {
+    const targetChild = target.children[index];
+    if (targetChild) {
+      inlineComputedStyles(sourceChild, targetChild);
+    }
+  });
+}
+
+function getExportBackgroundColor(element: HTMLElement) {
+  let currentElement: HTMLElement | null = element;
+
+  while (currentElement) {
+    const backgroundColor =
+      window.getComputedStyle(currentElement).backgroundColor;
+    if (backgroundColor && backgroundColor !== 'rgba(0, 0, 0, 0)') {
+      return backgroundColor;
+    }
+    currentElement = currentElement.parentElement;
+  }
+
+  return window.getComputedStyle(document.body).backgroundColor || '#ffffff';
+}
+
+function createTournamentSvg() {
+  if (!tournamentBracketElement) {
+    return '';
+  }
+
+  const clone = tournamentBracketElement.cloneNode(true) as HTMLElement;
+  const backgroundColor = getExportBackgroundColor(tournamentBracketElement);
+
+  inlineComputedStyles(tournamentBracketElement, clone);
+  clone.querySelectorAll('[data-font-family]').forEach((element) => {
+    const fontFamily = element.getAttribute('data-font-family');
+    if (fontFamily) {
+      element.textContent = fontFamily;
+    }
+  });
+  clone.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+  clone.style.boxSizing = 'border-box';
+  clone.style.margin = '0';
+  clone.style.width = 'max-content';
+  clone.style.height = 'max-content';
+  clone.style.backgroundColor = backgroundColor;
+
+  const measureContainer = document.createElement('div');
+  measureContainer.style.position = 'fixed';
+  measureContainer.style.left = '-100000px';
+  measureContainer.style.top = '0';
+  measureContainer.style.visibility = 'hidden';
+  measureContainer.style.pointerEvents = 'none';
+  measureContainer.style.width = 'max-content';
+  measureContainer.style.height = 'max-content';
+  measureContainer.appendChild(clone);
+  document.body.appendChild(measureContainer);
+
+  const width = Math.ceil(clone.scrollWidth || clone.getBoundingClientRect().width);
+  const height = Math.ceil(
+    clone.scrollHeight || clone.getBoundingClientRect().height
+  );
+  clone.style.width = `${width}px`;
+  clone.style.height = `${height}px`;
+
+  const content = new XMLSerializer().serializeToString(clone);
+  measureContainer.remove();
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+<rect width="100%" height="100%" fill="${backgroundColor}" />
+<foreignObject width="100%" height="100%">
+${content}
+</foreignObject>
+</svg>`;
+}
+
+function exportTournamentSvg() {
+  const svg = createTournamentSvg();
+  if (!svg) {
+    return;
+  }
+
+  const fileName = `${currentBracket?.winner?.family ?? 'coding-font'}-tournament`
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+  const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+
+  link.href = url;
+  link.download = `${fileName}.svg`;
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 async function chooseWinner(player, button) {
@@ -107,8 +214,23 @@ function scrollToBracket() {
     <Sidebar>
       <button class="variant-filled-primary btn" on:click="{startGame}"
         >Restart Game</button>
+      {#if currentBracket?.winner}
+        <button
+          class="variant-filled-primary btn"
+          on:click="{exportTournamentSvg}">
+          <IconDownload size="18" />
+          <span>Export Tournament</span>
+        </button>
+      {/if}
       {#if game?.rounds.length}
-        <div class="table-container rounded-none p-2">
+        <div class="flex items-center gap-2 px-2">
+          <span
+            class="text-sm font-bold uppercase tracking-wide opacity-70"
+            >Tournament Bracket</span>
+        </div>
+        <div
+          bind:this="{tournamentBracketElement}"
+          class="table-container rounded-none p-2">
           <div class="font-brackets">
             {#each game.rounds as round, index (round)}
               {#if game.finalRound === index}
@@ -130,7 +252,9 @@ function scrollToBracket() {
                           class="{bracket?.winner?.family == font.family
                             ? 'variant-ghost-primary'
                             : 'variant-soft-surface'}">
-                          <span style="{getFontStyle(font)}">
+                          <span
+                            data-font-family="{font.family}"
+                            style="{getFontStyle(font)}">
                             {$showName ? font.family : 'ABC abc 123'}
                           </span>
                         </PlayerBadge>
@@ -155,6 +279,14 @@ function scrollToBracket() {
       {#if !$menuOpen}
         <button class="variant-filled-primary btn" on:click="{startGame}"
           >Restart Game</button>
+        {#if currentBracket?.winner}
+          <button
+            class="variant-filled-primary btn"
+            on:click="{exportTournamentSvg}">
+            <IconDownload size="18" />
+            <span>Export Tournament</span>
+          </button>
+        {/if}
       {/if}
     </Controls>
   </svelte:fragment>
