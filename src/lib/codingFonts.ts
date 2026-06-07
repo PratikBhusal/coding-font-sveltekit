@@ -79,6 +79,20 @@ const codingFonts = [
     downloadUrl: 'https://fonts.google.com/download?family=Azeret%20Mono'
   },
   {
+    family: 'Cascadia Code',
+    variants: ['regular', 'italic'],
+    files: {
+      regular:
+        'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/cascadiacode/CascadiaCode%5Bwght%5D.ttf',
+      italic:
+        'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/cascadiacode/CascadiaCode-Italic%5Bwght%5D.ttf'
+    },
+    openTypeFeatures: ['zero'],
+    siteUrl: 'https://github.com/microsoft/cascadia-code',
+    downloadUrl:
+      'https://github.com/microsoft/cascadia-code/releases/download/v2407.24/CascadiaCode-2407.24.zip'
+  },
+  {
     family: 'B612 Mono',
     variants: ['regular', 'italic', '700', '700italic'],
     files: {
