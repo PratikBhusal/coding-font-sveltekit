@@ -1,4 +1,5 @@
 <script lang="ts">
+import { base } from '$app/paths';
 import { fontFamily, fontFamilyRight, menuOpen, showName } from '$lib/store';
 import {
   IconDownload,
@@ -9,6 +10,10 @@ import {
 import { getFontStyle } from './fontFeatures';
 
 export let fonts;
+
+function getFontPath(family: string) {
+  return `${base}/${encodeURIComponent(family.replace(/\s+/g, ''))}`;
+}
 </script>
 
 <div class="table-container whitespace-nowrap">
@@ -53,7 +58,7 @@ export let fonts;
                 <IconDownload size="16" />
               </a>
               <a
-                href="/{encodeURIComponent(font.family.replace(/\s+/g, ''))}"
+                href="{getFontPath(font.family)}"
                 class="!p-2 !pr-3">
                 <IconMaximize size="16" />
               </a>

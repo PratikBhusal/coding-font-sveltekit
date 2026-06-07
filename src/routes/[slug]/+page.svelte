@@ -1,4 +1,5 @@
 <script lang="ts">
+import { base } from '$app/paths';
 import { goto } from '$app/navigation';
 import { AppShell } from '@skeletonlabs/skeleton';
 import {
@@ -44,6 +45,10 @@ $: if ($searchTerm) {
 function getFontByFamilyName(familyName: string) {
   return data.fonts.find((font) => font.family === familyName);
 }
+
+function getFontPath(familyName: string) {
+  return `${base}/${encodeURIComponent(familyName.replace(/\s+/g, ''))}`;
+}
 </script>
 
 <AppShell
@@ -57,7 +62,7 @@ function getFontByFamilyName(familyName: string) {
       <div class="flex flex-col gap-4">
         <ol class="breadcrumb">
           <li class="crumb">
-            <a class="anchor" href="/browse">Browse</a>
+            <a class="anchor" href="{base}/browse">Browse</a>
           </li>
           <li class="crumb-separator" aria-hidden>&rsaquo;</li>
           <li>{currentFont?.family}</li>
@@ -128,7 +133,7 @@ function getFontByFamilyName(familyName: string) {
           {#each fonts as font (font)}
             <tr
               on:click="{() => {
-                goto(`/${encodeURIComponent(font.family.replace(/\s+/g, ''))}`);
+                goto(getFontPath(font.family));
               }}"
               class:!variant-ghost-primary="{currentFont.family ===
                 font.family}">

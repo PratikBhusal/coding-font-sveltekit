@@ -7,6 +7,9 @@ export default {
   // for more information about preprocessors
   preprocess: vitePreprocess(),
   kit: {
+    paths: {
+      base: process.env.BASE_PATH || ''
+    },
     adapter: adapter({
       // default options are shown. On some platforms
       // these options are set automatically — see below

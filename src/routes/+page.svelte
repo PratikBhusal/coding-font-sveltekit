@@ -1,4 +1,5 @@
 <script lang="ts">
+import { base } from '$app/paths';
 import { onMount, tick } from 'svelte';
 import { AppShell } from '@skeletonlabs/skeleton';
 import {
@@ -51,6 +52,10 @@ function startGame() {
 
 function getFontByFamilyName(familyName: string) {
   return fonts.find((font) => font.family === familyName);
+}
+
+function getFontPath(familyName: string) {
+  return `${base}/${encodeURIComponent(familyName.replace(/\s+/g, ''))}`;
 }
 
 async function chooseWinner(player, button) {
@@ -179,7 +184,7 @@ function scrollToBracket() {
         class="bg-surface-50-900-token border-surface-900-50-token relative col-span-1 row-span-2 border-4 p-6 text-center md:col-span-2 md:row-span-1 md:p-10">
         <img
           class="absolute bottom-0 left-0 right-0 mx-auto opacity-60"
-          src="/trophy.png"
+          src="{base}/trophy.png"
           alt="Trophy of Font"
           width="400" />
         <div
@@ -206,9 +211,7 @@ function scrollToBracket() {
                 >Download {currentBracket?.winner.family}</span>
             </a>
             <a
-              href="/{encodeURIComponent(
-                currentBracket?.winner.family.replace(/\s+/g, '')
-              )}">
+              href="{getFontPath(currentBracket?.winner.family)}">
               <IconMaximize size="24" />
               <span class="hidden 2xl:block">View Font Detail</span>
             </a>
