@@ -103,6 +103,20 @@ const codingFonts = [
     downloadUrl: 'https://developer.apple.com/fonts/'
   },
   {
+    family: 'Monaspace Argon',
+    variants: ['regular', 'italic'],
+    files: {
+      regular:
+        'https://cdn.jsdelivr.net/gh/githubnext/monaspace@main/fonts/Web%20Fonts/Variable%20Web%20Fonts/Monaspace%20Argon/Monaspace%20Argon%20Var.woff2',
+      italic:
+        'https://cdn.jsdelivr.net/gh/githubnext/monaspace@main/fonts/Web%20Fonts/Static%20Web%20Fonts/Monaspace%20Argon/MonaspaceArgon-Italic.woff2'
+    },
+    openTypeFeatures: ['cv01=2'],
+    ligatureFeatures: ['ss01', 'ss02', 'ss03', 'ss04', 'ss05', 'ss06'],
+    siteUrl: 'https://monaspace.githubnext.com/',
+    downloadUrl: 'https://github.com/githubnext/monaspace'
+  },
+  {
     family: 'B612 Mono',
     variants: ['regular', 'italic', '700', '700italic'],
     files: {

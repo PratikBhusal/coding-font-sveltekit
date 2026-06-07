@@ -16,7 +16,14 @@ export function getFontFeatures(
     return enabledFeatures.indexOf(feature) === index;
   });
 
-  return features.map((feature) => `"${feature}"`).join(', ');
+  return features
+    .map((feature) => {
+      const [featureName, featureValue] = feature.split('=');
+      return featureValue
+        ? `"${featureName}" ${featureValue}`
+        : `"${featureName}"`;
+    })
+    .join(', ');
 }
 
 export function getFontStyle(

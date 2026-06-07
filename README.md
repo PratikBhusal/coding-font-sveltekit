@@ -2,8 +2,6 @@
 
 # TODO: New Fonts
 
-[Monaspace Argon](https://fontsource.org/fonts/monaspace-argon)
-
 [Monaspace Neon](https://fontsource.org/fonts/monaspace-neon)
 
 Note: For Monaspace fonts, you will need to have the opentype feature `cv01=2`
