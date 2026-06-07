@@ -22,6 +22,7 @@ import {
   selectedTheme,
   fontSize,
   fontLigatures,
+  editorLanguage,
   menuOpen
 } from '$lib/store';
 
@@ -168,6 +169,7 @@ function scrollToBracket() {
           fontSize="{$fontSize}"
           fontFamily="{currentBracket.players[0].family}"
           fontLigatures="{$fontLigatures}"
+          language="{$editorLanguage}"
           themeName="{$selectedTheme}" />
         <button
           bind:this="{leftButton}"
@@ -184,6 +186,7 @@ function scrollToBracket() {
           fontSize="{$fontSize}"
           fontFamily="{currentBracket.players[1].family}"
           fontLigatures="{$fontLigatures}"
+          language="{$editorLanguage}"
           themeName="{$selectedTheme}" />
         <button
           bind:this="{rightButton}"

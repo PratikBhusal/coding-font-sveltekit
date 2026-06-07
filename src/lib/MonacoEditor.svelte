@@ -13,7 +13,11 @@ export let fontFamily = 'JetBrains Mono';
 export let fontSize = 20;
 export let fontLigatures = true;
 export let themeName = 'monokai';
-export let code = `// This is a single-line comment example
+export let language = 'javascript';
+export let code = '';
+
+const sampleCodeByLanguage = {
+  javascript: `// This is a single-line comment example
 
 /*
 This is a multi-line comment example
@@ -46,10 +50,43 @@ let l1I = 1; // One
 
 // Calling the function with different parameters
 isMultipleOf(oO0, l1I); // Output related to zero
-isMultipleOf(l1I, oO0); // Output related to one`;
+isMultipleOf(l1I, oO0); // Output related to one`,
+  python: `import os
+import sublime
+from pathlib import PurePath
+
+NUMERALS = 1234567890
+SIMILAR = "oO08 iIlL1 g9qCGQ 8%& <([{}])> .,;: ~-_="
+DIACRITICS_ETC = "â é ù ï ø ç Ã Ē Æ œ"
+
+class SideBarDuplicateCommand(SideBarCommand):
+
+    def run(self, paths, **kwargs):
+        source = self.get_path(paths, **kwargs)
+        base, leaf = os.path.split(source)
+
+        # find the file extension
+        name, ext = os.path.splitext(leaf)
+        if ext != '':
+            while '.' in name:
+                name, _ext = os.path.splitext(name)
+                ext = _ext + ext
+                if _ext == '':
+                    break
+
+        source = self.get_path(paths, **kwargs)
+
+        input_panel = self.window.show_input_panel(
+            'Duplicate As:', source, partial(self.on_done, source), None, None)
+
+        input_panel.sel().clear()
+        input_panel.sel().add(
+            sublime.Region(len(base) + 1, len(source) - len(ext))`
+};
 
 let editor;
 let editorContainer;
+let monaco;
 
 $: currentFont = codingFonts.find((font) => font.family === fontFamily);
 $: fontFeatures = getFontFeatures(currentFont);
@@ -73,20 +110,20 @@ onMount(async () => {
       return new editorWorker();
     }
   };
-  const monaco = await import('monaco-editor');
+  monaco = await import('monaco-editor');
   monacoThemes.forEach((theme) => {
     monaco.editor.defineTheme(theme.slug, theme.themeData);
   });
   editor = monaco.editor.create(editorContainer, {
-    value: code,
-    language: 'javascript',
+    value: code || sampleCodeByLanguage[language] || sampleCodeByLanguage.javascript,
+    language: language,
     theme: 'vs-dark',
     fontFamily: `'${fontFamily}', monospace`,
     fontSize: fontSize,
     fontLigatures: monacoFontLigatures,
     automaticLayout: true,
     minimap: {
-      enabled: true
+      enabled: false
     }
   });
   editor.updateOptions({ theme: themeName });
@@ -106,6 +143,16 @@ $: if (editor) {
 
 $: if (editor) {
   editor.updateOptions({ fontLigatures: monacoFontLigatures });
+}
+
+$: if (editor && monaco) {
+  const model = editor.getModel();
+  if (model) {
+    monaco.editor.setModelLanguage(model, language);
+    if (!code) {
+      model.setValue(sampleCodeByLanguage[language] || sampleCodeByLanguage.javascript);
+    }
+  }
 }
 </script>
 

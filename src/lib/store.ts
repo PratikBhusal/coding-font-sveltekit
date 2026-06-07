@@ -23,6 +23,11 @@ export const fontLigatures: Writable<boolean> = localStorageStore(
   true
 );
 
+export const editorLanguage: Writable<string> = localStorageStore(
+  'editorLanguage',
+  'javascript'
+);
+
 export const searchTerm: Writable<string> = localStorageStore('searchTerm', '');
 
 export const menuOpen: Writable<boolean> = localStorageStore('menuOpen', false);

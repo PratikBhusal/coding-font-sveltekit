@@ -15,6 +15,7 @@ import {
   fontFamily,
   fontFamilyRight,
   fontLigatures,
+  editorLanguage,
   menuOpen,
   searchTerm
 } from '$lib/store';
@@ -61,6 +62,7 @@ $: if ($searchTerm) {
         fontSize="{$fontSize}"
         fontFamily="{$fontFamily}"
         fontLigatures="{$fontLigatures}"
+        language="{$editorLanguage}"
         themeName="{$selectedTheme}" />
     </div>
     {#if $fontFamilyRight}
@@ -71,6 +73,7 @@ $: if ($searchTerm) {
           fontSize="{$fontSize}"
           fontFamily="{$fontFamilyRight}"
           fontLigatures="{$fontLigatures}"
+          language="{$editorLanguage}"
           themeName="{$selectedTheme}" />
         <button
           class="variant-filled-surface btn absolute bottom-4 self-center"

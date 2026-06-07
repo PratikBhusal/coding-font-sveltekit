@@ -19,6 +19,7 @@ import {
   fontSize,
   fontFamilyRight,
   fontLigatures,
+  editorLanguage,
   menuOpen,
   searchTerm
 } from '$lib/store';
@@ -184,6 +185,7 @@ function getFontPath(familyName: string) {
         fontSize="{$fontSize}"
         fontFamily="{currentFont?.family}"
         fontLigatures="{$fontLigatures}"
+        language="{$editorLanguage}"
         themeName="{$selectedTheme}" />
     </div>
     {#if $fontFamilyRight}
@@ -194,6 +196,7 @@ function getFontPath(familyName: string) {
           fontSize="{$fontSize}"
           fontFamily="{$fontFamilyRight}"
           fontLigatures="{$fontLigatures}"
+          language="{$editorLanguage}"
           themeName="{$selectedTheme}" />
         <button
           class="variant-filled-surface btn absolute bottom-10 self-center"

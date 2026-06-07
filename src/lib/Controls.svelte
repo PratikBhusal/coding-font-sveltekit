@@ -1,7 +1,13 @@
 <script lang="ts">
 import { monacoThemeNames } from '$lib';
 import { RangeSlider } from '@skeletonlabs/skeleton';
-import { showName, selectedTheme, fontSize, fontLigatures } from '$lib/store';
+import {
+  showName,
+  selectedTheme,
+  fontSize,
+  fontLigatures,
+  editorLanguage
+} from '$lib/store';
 
 const sortedMonacoThemes = monacoThemeNames.sort((a, b) => {
   if (a.italic && !b.italic) {
@@ -14,6 +20,11 @@ const sortedMonacoThemes = monacoThemeNames.sort((a, b) => {
 
   return 0;
 });
+
+const editorLanguages = [
+  { id: 'javascript', displayName: 'JavaScript' },
+  { id: 'python', displayName: 'Python' }
+];
 </script>
 
 <div
@@ -28,6 +39,14 @@ const sortedMonacoThemes = monacoThemeNames.sort((a, b) => {
     <select class="select min-w-[6rem]" bind:value="{$selectedTheme}" size="1">
       {#each sortedMonacoThemes as theme (theme.slug)}
         <option value="{theme.slug}">{theme.displayName}</option>
+      {/each}
+    </select>
+  </label>
+  <label class="flex flex-row items-baseline gap-2 whitespace-nowrap">
+    <span>Language: </span>
+    <select class="select min-w-[7rem]" bind:value="{$editorLanguage}" size="1">
+      {#each editorLanguages as language (language.id)}
+        <option value="{language.id}">{language.displayName}</option>
       {/each}
     </select>
   </label>
