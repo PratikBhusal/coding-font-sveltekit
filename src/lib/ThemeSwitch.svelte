@@ -1,5 +1,6 @@
 <script lang="ts">
 import { onMount } from 'svelte';
+import { page } from '$app/stores';
 import { fly } from 'svelte/transition';
 import type { Writable } from 'svelte/store';
 import { LightSwitch, localStorageStore } from '@skeletonlabs/skeleton';
@@ -29,6 +30,7 @@ const themes = [
   { id: 'gold-nouveau', displayName: 'Gold Nouveau' }
 ];
 let isOpen = false;
+$: canHideSidebar = !$page.url.pathname.endsWith('/browse');
 
 onMount(() => {
   document.body.setAttribute('data-theme', $themeSelection);
@@ -67,10 +69,12 @@ function toggleSidebar() {
       }}"
       class="card bg-surface-200-700-token absolute right-0 top-full z-30 mt-2 h-auto w-60 p-4 shadow-xl">
       <div class="mb-4 flex flex-col gap-2">
-        <button class="btn justify-start" on:click="{toggleSidebar}">
-          <IconMenu size="18" />
-          <span>{$menuOpen ? 'Hide sidebar' : 'Show sidebar'}</span>
-        </button>
+        {#if canHideSidebar}
+          <button class="btn justify-start" on:click="{toggleSidebar}">
+            <IconMenu size="18" />
+            <span>{$menuOpen ? 'Hide sidebar' : 'Show sidebar'}</span>
+          </button>
+        {/if}
         <button class="btn justify-start" on:click="{resetSidebarWidth}">
           <ArrowsHorizontal size="18" />
           <span>Reset sidebar width</span>

@@ -5,6 +5,8 @@ import {
   sidebarWidth
 } from '$lib/store';
 
+export let alwaysOpen = false;
+
 let sidebar;
 let shellSidebar: HTMLElement | null = null;
 let startX = 0;
@@ -26,8 +28,9 @@ function clampSidebarWidth(width: number) {
 function syncShellSidebarWidth() {
   if (!shellSidebar) return;
 
-  shellSidebar.style.width = $menuOpen ? `${$sidebarWidth}px` : '0px';
-  shellSidebar.style.minWidth = $menuOpen ? `${minSidebarWidth}px` : '0px';
+  const isOpen = alwaysOpen || $menuOpen;
+  shellSidebar.style.width = isOpen ? `${$sidebarWidth}px` : '0px';
+  shellSidebar.style.minWidth = isOpen ? `${minSidebarWidth}px` : '0px';
   shellSidebar.style.maxWidth = `${window.innerWidth}px`;
 }
 
@@ -63,6 +66,7 @@ $: if (sidebar) {
 $: {
   $menuOpen;
   $sidebarWidth;
+  alwaysOpen;
   syncShellSidebarWidth();
 }
 </script>
@@ -70,7 +74,7 @@ $: {
 <div
   bind:this="{sidebar}"
   class="bg-surface-100-800-token absolute z-20 flex h-full w-full flex-col gap-4 overflow-y-auto overflow-x-hidden border-r border-surface-400 p-4 pr-5 dark:border-surface-500 lg:static"
-  class:hidden="{!$menuOpen}">
+  class:hidden="{!alwaysOpen && !$menuOpen}">
   <slot />
   <button
     type="button"
