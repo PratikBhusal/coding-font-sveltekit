@@ -67,6 +67,24 @@
     format('opentype');
 }
 
+/* Load 0xProto */
+@font-face {
+  font-family: '0xProto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/0xType/0xProto@main/fonts/0xProto-Regular.woff2')
+    format('woff2');
+}
+@font-face {
+  font-family: '0xProto';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/gh/0xType/0xProto@main/fonts/0xProto-Italic.woff2')
+    format('woff2');
+}
+
 /* Load SF Mono */
 @font-face {
   font-family: 'SF Mono';

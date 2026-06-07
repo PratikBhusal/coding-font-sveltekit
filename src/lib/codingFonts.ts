@@ -115,6 +115,18 @@ const codingFonts = [
     downloadUrl: 'https://github.com/eigilnikolajsen/commit-mono'
   },
   {
+    family: '0xProto',
+    variants: ['regular', 'italic'],
+    files: {
+      regular:
+        'https://cdn.jsdelivr.net/gh/0xType/0xProto@main/fonts/0xProto-Regular.woff2',
+      italic:
+        'https://cdn.jsdelivr.net/gh/0xType/0xProto@main/fonts/0xProto-Italic.woff2'
+    },
+    siteUrl: 'https://github.com/0xType/0xProto',
+    downloadUrl: 'https://github.com/0xType/0xProto'
+  },
+  {
     family: 'SF Mono',
     variants: ['regular', 'italic'],
     files: {
