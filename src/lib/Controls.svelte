@@ -6,6 +6,7 @@ import {
   selectedTheme,
   fontSize,
   fontLigatures,
+  fontOpenTypeFeatures,
   editorLanguage
 } from '$lib/store';
 
@@ -65,5 +66,12 @@ const editorLanguages = [
   <label class="flex items-center space-x-2">
     <input class="checkbox" type="checkbox" bind:checked="{$fontLigatures}" />
     <span>Font Ligatures</span>
+  </label>
+  <label class="flex items-center space-x-2">
+    <input
+      class="checkbox"
+      type="checkbox"
+      bind:checked="{$fontOpenTypeFeatures}" />
+    <span>OpenType Features</span>
   </label>
 </div>

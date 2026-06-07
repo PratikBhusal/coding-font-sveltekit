@@ -1,6 +1,13 @@
 <script lang="ts">
 import { base } from '$app/paths';
-import { fontFamily, fontFamilyRight, menuOpen, showName } from '$lib/store';
+import {
+  fontFamily,
+  fontFamilyRight,
+  fontLigatures,
+  fontOpenTypeFeatures,
+  menuOpen,
+  showName
+} from '$lib/store';
 import {
   IconDownload,
   IconExternalLink,
@@ -34,7 +41,11 @@ function getFontPath(family: string) {
           }}"
           class:!variant-ghost-primary="{$fontFamily === font.family}">
           <td
-            style="{getFontStyle(font)}"
+            style="{getFontStyle(
+              font,
+              $fontOpenTypeFeatures,
+              $fontLigatures
+            )}"
             class="max-w-[9rem] truncate !whitespace-nowrap"
             >{$showName ? font.family : 'ABC abc 123'}</td>
           <td class="hidden md:table-cell">

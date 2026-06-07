@@ -15,6 +15,7 @@ import {
   fontFamily,
   fontFamilyRight,
   fontLigatures,
+  fontOpenTypeFeatures,
   editorLanguage,
   searchTerm
 } from '$lib/store';
@@ -59,6 +60,7 @@ $: if ($searchTerm) {
         fontSize="{$fontSize}"
         fontFamily="{$fontFamily}"
         fontLigatures="{$fontLigatures}"
+        fontOpenTypeFeatures="{$fontOpenTypeFeatures}"
         language="{$editorLanguage}"
         themeName="{$selectedTheme}" />
     </div>
@@ -70,6 +72,7 @@ $: if ($searchTerm) {
           fontSize="{$fontSize}"
           fontFamily="{$fontFamilyRight}"
           fontLigatures="{$fontLigatures}"
+          fontOpenTypeFeatures="{$fontOpenTypeFeatures}"
           language="{$editorLanguage}"
           themeName="{$selectedTheme}" />
         <button

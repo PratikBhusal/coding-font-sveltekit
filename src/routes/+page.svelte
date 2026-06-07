@@ -22,6 +22,7 @@ import {
   selectedTheme,
   fontSize,
   fontLigatures,
+  fontOpenTypeFeatures,
   editorLanguage,
   menuOpen
 } from '$lib/store';
@@ -236,7 +237,12 @@ function scrollToBracket() {
               {#if game.finalRound === index}
                 <div class="round-winner">
                   <WinnerBadge>
-                    <span style="{getFontStyle(round[0].winner)}">
+                    <span
+                      style="{getFontStyle(
+                        round[0].winner,
+                        $fontOpenTypeFeatures,
+                        $fontLigatures
+                      )}">
                       {round[0].winner.family}
                     </span>
                   </WinnerBadge>
@@ -254,7 +260,11 @@ function scrollToBracket() {
                             : 'variant-soft-surface'}">
                           <span
                             data-font-family="{font.family}"
-                            style="{getFontStyle(font)}">
+                            style="{getFontStyle(
+                              font,
+                              $fontOpenTypeFeatures,
+                              $fontLigatures
+                            )}">
                             {$showName ? font.family : 'ABC abc 123'}
                           </span>
                         </PlayerBadge>
@@ -301,6 +311,7 @@ function scrollToBracket() {
           fontSize="{$fontSize}"
           fontFamily="{currentBracket.players[0].family}"
           fontLigatures="{$fontLigatures}"
+          fontOpenTypeFeatures="{$fontOpenTypeFeatures}"
           language="{$editorLanguage}"
           themeName="{$selectedTheme}" />
         <button
@@ -318,6 +329,7 @@ function scrollToBracket() {
           fontSize="{$fontSize}"
           fontFamily="{currentBracket.players[1].family}"
           fontLigatures="{$fontLigatures}"
+          fontOpenTypeFeatures="{$fontOpenTypeFeatures}"
           language="{$editorLanguage}"
           themeName="{$selectedTheme}" />
         <button
@@ -344,7 +356,11 @@ function scrollToBracket() {
           </div>
           <div
             class="my-4 text-4xl md:text-6xl"
-            style="{getFontStyle(currentBracket?.winner)}">
+            style="{getFontStyle(
+              currentBracket?.winner,
+              $fontOpenTypeFeatures,
+              $fontLigatures
+            )}">
             {currentBracket?.winner.family}
           </div>
           <div class="variant-soft-surface btn-group self-center">

@@ -12,6 +12,7 @@ import { getFontFeatures } from './fontFeatures';
 export let fontFamily = 'JetBrains Mono';
 export let fontSize = 20;
 export let fontLigatures = true;
+export let fontOpenTypeFeatures = true;
 export let themeName = 'monokai';
 export let language = 'javascript';
 export let code = '';
@@ -89,7 +90,11 @@ let editorContainer;
 let monaco;
 
 $: currentFont = codingFonts.find((font) => font.family === fontFamily);
-$: fontFeatures = getFontFeatures(currentFont);
+$: fontFeatures = getFontFeatures(
+  currentFont,
+  fontOpenTypeFeatures,
+  fontLigatures
+);
 $: monacoFontLigatures = fontFeatures || fontLigatures;
 
 onMount(async () => {

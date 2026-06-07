@@ -23,6 +23,11 @@ export const fontLigatures: Writable<boolean> = localStorageStore(
   true
 );
 
+export const fontOpenTypeFeatures: Writable<boolean> = localStorageStore(
+  'fontOpenTypeFeatures',
+  true
+);
+
 export const editorLanguage: Writable<string> = localStorageStore(
   'editorLanguage',
   'javascript'

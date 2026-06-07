@@ -19,6 +19,7 @@ import {
   fontSize,
   fontFamilyRight,
   fontLigatures,
+  fontOpenTypeFeatures,
   editorLanguage,
   menuOpen,
   searchTerm
@@ -79,7 +80,11 @@ function getFontPath(familyName: string) {
           {/each}
         </div>
         <div
-          style="{getFontStyle(currentFont)}"
+          style="{getFontStyle(
+            currentFont,
+            $fontOpenTypeFeatures,
+            $fontLigatures
+          )}"
           class="card border-surface-400-500-token relative flex min-h-[10rem] flex-col items-center justify-center overflow-hidden whitespace-nowrap bg-white border-token dark:bg-surface-900">
           <div class="code absolute bottom-0 right-0">regular</div>
           <span>{`0oO | Ll1Iti ,.:; () [] {} <> * ??. !!`}</span>
@@ -90,7 +95,11 @@ function getFontPath(familyName: string) {
         </div>
         {#if currentFont?.variants.includes('italic')}
           <div
-            style="{getFontStyle(currentFont)}; font-style: italic;"
+            style="{getFontStyle(
+              currentFont,
+              $fontOpenTypeFeatures,
+              $fontLigatures
+            )}; font-style: italic;"
             class="card border-surface-400-500-token relative flex min-h-[10rem] flex-col items-center justify-center overflow-hidden whitespace-nowrap bg-white border-token dark:bg-surface-900">
             <div class="code absolute bottom-0 right-0">italic</div>
             <span>{`0oO | Ll1Iti ,.:; () [] {} <> * ??. !!`}</span>
@@ -141,7 +150,11 @@ function getFontPath(familyName: string) {
               class:!variant-ghost-primary="{currentFont.family ===
                 font.family}">
               <td
-                style="{getFontStyle(font)}"
+                style="{getFontStyle(
+                  font,
+                  $fontOpenTypeFeatures,
+                  $fontLigatures
+                )}"
                 class="max-w-[9rem] truncate !whitespace-nowrap"
                 >{font.family}</td>
               <td class="hidden md:table-cell">
@@ -185,6 +198,7 @@ function getFontPath(familyName: string) {
         fontSize="{$fontSize}"
         fontFamily="{currentFont?.family}"
         fontLigatures="{$fontLigatures}"
+        fontOpenTypeFeatures="{$fontOpenTypeFeatures}"
         language="{$editorLanguage}"
         themeName="{$selectedTheme}" />
     </div>
@@ -196,6 +210,7 @@ function getFontPath(familyName: string) {
           fontSize="{$fontSize}"
           fontFamily="{$fontFamilyRight}"
           fontLigatures="{$fontLigatures}"
+          fontOpenTypeFeatures="{$fontOpenTypeFeatures}"
           language="{$editorLanguage}"
           themeName="{$selectedTheme}" />
         <button
