@@ -76,7 +76,9 @@ onMount(async () => {
   }
 
   if ($tournamentFontFamilies === null) {
-    $tournamentFontFamilies = fonts.map((font) => font.family);
+    $tournamentFontFamilies = fonts
+      .filter((font) => font.includeInInitialTournament)
+      .map((font) => font.family);
   }
 
   await tick();

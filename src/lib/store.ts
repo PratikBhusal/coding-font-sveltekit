@@ -53,5 +53,5 @@ export const tournamentFontFamilies: Writable<string[] | null> =
 export const tournamentEliminationMode: Writable<TournamentEliminationMode> =
   localStorageStore(
     'tournamentEliminationMode',
-    TournamentEliminationMode.Single
+    TournamentEliminationMode.Double
   );

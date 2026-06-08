@@ -36,7 +36,7 @@ export function createConfetti(size = 'big', position = { x: 0.5, y: 0.5 }) {
 export function createGame(initialPlayers, options = {}) {
   const players = [...initialPlayers];
   const eliminationMode =
-    options.eliminationMode ?? TournamentEliminationMode.Single;
+    options.eliminationMode ?? TournamentEliminationMode.Double;
 
   function getPreviousPowerOfTwo(value) {
     return 2 ** Math.floor(Math.log2(value));
