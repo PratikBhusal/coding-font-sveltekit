@@ -593,7 +593,6 @@ function createTournamentSvg() {
   const championLabelTextY = championLabelY + championLabelHeight / midpointDivisor;
   const championNameY = championCenter - championNameOffset;
   const championTextY = championNameY + championNameHeight / midpointDivisor;
-  renderLine(finalX, championCenter, championX, championCenter);
 
   defs.push(
     `<clipPath id="${championClipId}"><rect x="${championX}" y="${championNameY}" width="${championWidth}" height="${championNameHeight}" /></clipPath>`
@@ -1238,7 +1237,6 @@ function createDoubleEliminationTournamentSvg() {
       const championNameY = finalCenter - championNameOffset;
       const championTextY = championNameY + championNameHeight / midpointDivisor;
 
-      renderLine(finalX, finalCenter, championX, finalCenter);
       defs.push(
         `<clipPath id="${championClipId}"><rect x="${championX}" y="${championNameY}" width="${championWidth}" height="${championNameHeight}" /></clipPath>`
       );
