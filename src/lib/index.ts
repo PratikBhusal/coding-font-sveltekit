@@ -20,7 +20,12 @@ import { monacoThemeNames, monacoThemes } from './monacoThemes';
 import codingFonts from './codingFonts';
 import type { CodingFont } from './codingFonts';
 
-import { createGame, createConfetti } from './game';
+import {
+  createGame,
+  createConfetti,
+  TournamentEliminationMode,
+  TournamentBracketType
+} from './game';
 
 export {
   /* Icon Components */
@@ -49,7 +54,9 @@ export {
   codingFonts,
   /* Tournament Game Factory */
   createGame,
-  createConfetti
+  createConfetti,
+  TournamentEliminationMode,
+  TournamentBracketType
 };
 
 export type { CodingFont };

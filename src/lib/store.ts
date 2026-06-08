@@ -1,5 +1,6 @@
 import { writable, type Writable } from 'svelte/store';
 import { localStorageStore } from '@skeletonlabs/skeleton';
+import { TournamentEliminationMode } from './game';
 
 export const selectedTheme: Writable<string> = localStorageStore(
   'selectedTheme',
@@ -48,3 +49,9 @@ export const showName: Writable<boolean> = localStorageStore('showName', false);
 
 export const tournamentFontFamilies: Writable<string[] | null> =
   localStorageStore('tournamentFontFamilies', null);
+
+export const tournamentEliminationMode: Writable<TournamentEliminationMode> =
+  localStorageStore(
+    'tournamentEliminationMode',
+    TournamentEliminationMode.Single
+  );

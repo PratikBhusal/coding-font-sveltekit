@@ -12,7 +12,8 @@ import {
   Controls,
   MonacoEditor,
   createGame,
-  createConfetti
+  createConfetti,
+  TournamentEliminationMode
 } from '$lib';
 import { getFontStyle } from '$lib/fontFeatures';
 import {
@@ -27,7 +28,8 @@ import {
   fontOpenTypeFeatures,
   editorLanguage,
   menuOpen,
-  tournamentFontFamilies
+  tournamentFontFamilies,
+  tournamentEliminationMode
 } from '$lib/store';
 import type { CodingFont } from '$lib';
 
@@ -86,7 +88,9 @@ function startGame(closeSidebar = false) {
   // Capture old game state before replacing it so
   // the first start is not treated as a restart.
   const isRestarting = Boolean(game);
-  game = createGame(selectedTournamentFonts);
+  game = createGame(selectedTournamentFonts, {
+    eliminationMode: $tournamentEliminationMode
+  });
   currentBracket = game.startGame();
 
   if (isRestarting && closeSidebar) {
@@ -176,9 +180,19 @@ function getSvgFontFamily(font: CodingFont) {
   return escapeXml(getCssFontFamily(font));
 }
 
+function getStandardThemeColor(themeVariable: StandardThemeProperty) {
+  const colorValue = standardThemeProperties[themeVariable];
+
+  return `rgb(${colorValue.split(/\s+/).join(', ')})`;
+}
+
 function createTournamentSvg() {
   if (!game?.rounds?.length || !currentBracket?.winner) {
     return '';
+  }
+
+  if (game.eliminationMode === TournamentEliminationMode.Double) {
+    return createDoubleEliminationTournamentSvg();
   }
 
   const rounds = game.rounds;
@@ -350,12 +364,6 @@ function createTournamentSvg() {
 
   function getRoundX(roundIndex: number) {
     return padding + roundIndex * (bracketWidth + roundGap);
-  }
-
-  function getStandardThemeColor(themeVariable: StandardThemeProperty) {
-    const colorValue = standardThemeProperties[themeVariable];
-
-    return `rgb(${colorValue.split(/\s+/).join(', ')})`;
   }
 
   function measureSvgTextBounds(
@@ -537,6 +545,450 @@ ${output.join('\n')}
 </svg>`;
 }
 
+function createDoubleEliminationTournamentSvg() {
+  if (!game?.rounds?.length || !currentBracket?.winner) {
+    return '';
+  }
+
+  const sections = [
+    {
+      label: 'Winners Bracket',
+      rounds: game.winnersRounds ?? []
+    },
+    {
+      label: 'Losers Bracket',
+      rounds: game.losersRounds ?? []
+    },
+    {
+      label: 'Final',
+      rounds: game.finalRounds ?? []
+    }
+  ].filter((section) => section.rounds.length > 0);
+  const sectionFonts = Array.from(
+    new Map(
+      sections
+        .flatMap((section) =>
+          section.rounds.flatMap((round) =>
+            round.flatMap((match) => match.players)
+          )
+        )
+        .concat(currentBracket.winner)
+        .map((font) => [font.family, font])
+    ).values()
+  );
+  const padding = 0;
+  const firstRoundIndex = 0;
+  const firstPlayerIndex = 0;
+  const singlePlayerCount = 1;
+  const secondPlayerIndex = firstPlayerIndex + singlePlayerCount;
+  const playersPerBracket = 2;
+  const midpointDivisor = 2;
+  const championTextFontSize = $fontSize;
+  const baseLabelFontSize = 14;
+  const layoutUnit = championTextFontSize;
+  const scaleLayout = (multiplier: number) =>
+    Math.round(layoutUnit * multiplier);
+  const hiddenMeasurementSvgSize = 0;
+  const fallbackMonospaceGlyphWidthEm = 0.6;
+  const connectorStrokeWidth = scaleLayout(2 / baseLabelFontSize);
+  const rectRadius = scaleLayout(4 / baseLabelFontSize);
+  const playerTextFontSize = scaleLayout(13 / baseLabelFontSize);
+  const fontNameTextInset = scaleLayout(12 / baseLabelFontSize);
+  const championLabelHeight = scaleLayout(24 / baseLabelFontSize);
+  const championLabelOffset = scaleLayout(32 / baseLabelFontSize);
+  const championLabelFontSize = scaleLayout(12 / baseLabelFontSize);
+  const championNameOffset = scaleLayout(4 / baseLabelFontSize);
+  const championNameHeight = scaleLayout(36 / baseLabelFontSize);
+  const championLabelFontWeight = 700;
+  const measuredLabelFontSize = championTextFontSize;
+  const playerHeight = scaleLayout(30 / baseLabelFontSize);
+  const playerGap = scaleLayout(8 / baseLabelFontSize);
+  const bracketGap = scaleLayout(22 / baseLabelFontSize);
+  const roundGap = scaleLayout(6);
+  const sectionGap = scaleLayout(28 / baseLabelFontSize);
+  const sectionLabelHeight = scaleLayout(24 / baseLabelFontSize);
+  const labelFontSize = scaleLayout(12 / baseLabelFontSize);
+  const labelFontWeight = 700;
+  const strokeColor = getStandardThemeColor('--color-primary-500');
+  const textColor = getStandardThemeColor('--theme-font-color-base');
+  const primaryTextColor = getStandardThemeColor('--color-primary-700');
+  const surfaceColor = getStandardThemeColor('--color-surface-100');
+  const winnerColor = getStandardThemeColor('--color-primary-300');
+  const winnerStrokeColor = getStandardThemeColor('--color-primary-500');
+  const onPrimaryTextColor = getStandardThemeColor('--on-primary');
+  const fontNameMeasurements = sectionFonts.map((font) =>
+    measureSvgTextBounds(font.family, measuredLabelFontSize, [
+      getCssFontFamily(font),
+      getCssMonospaceFallback()
+    ])
+  );
+  const bracketWidth = Math.ceil(
+    Math.max(...fontNameMeasurements.map((measurement) => measurement.right)) +
+      fontNameTextInset
+  );
+  const championWidth = bracketWidth;
+  const bracketHeight = playerHeight * playersPerBracket + playerGap;
+  const bracketStep = bracketHeight + bracketGap;
+  const output = [];
+  const defs = [];
+  let clipId = 0;
+  let currentY = padding;
+
+  function measureSvgTextBounds(
+    value: string,
+    fontSize: number,
+    fontFamilies: string[]
+  ) {
+    if (typeof document === 'undefined') {
+      return {
+        left: 0,
+        right: value.length * fontSize * fallbackMonospaceGlyphWidthEm
+      };
+    }
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+
+    svg.setAttribute('width', String(hiddenMeasurementSvgSize));
+    svg.setAttribute('height', String(hiddenMeasurementSvgSize));
+    svg.style.position = 'absolute';
+    svg.style.visibility = 'hidden';
+    svg.style.overflow = 'visible';
+    document.body.appendChild(svg);
+
+    try {
+      const measurements = fontFamilies.map((fontFamily) => {
+        const text = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'text'
+        );
+
+        text.setAttribute('x', '0');
+        text.setAttribute('y', '0');
+        text.setAttribute('font-size', String(fontSize));
+        text.setAttribute('font-family', fontFamily);
+        text.textContent = value;
+        svg.appendChild(text);
+
+        const bounds = text.getBBox();
+
+        text.remove();
+
+        return {
+          left: Math.max(0, -bounds.x),
+          right: bounds.x + bounds.width
+        };
+      });
+
+      return {
+        left: Math.max(...measurements.map((measurement) => measurement.left)),
+        right: Math.max(...measurements.map((measurement) => measurement.right))
+      };
+    } catch {
+      return {
+        left: 0,
+        right: value.length * fontSize * fallbackMonospaceGlyphWidthEm
+      };
+    } finally {
+      svg.remove();
+    }
+  }
+
+  function getSectionDefaultCenter(bracketIndex: number, sectionY: number) {
+    return (
+      sectionY +
+      sectionLabelHeight +
+      bracketHeight / midpointDivisor +
+      bracketIndex * bracketStep
+    );
+  }
+
+  function getRenderedBracketHeight(match) {
+    return match.players.length === singlePlayerCount
+      ? playerHeight
+      : bracketHeight;
+  }
+
+  function preventRoundOverlaps(round, centers: number[]) {
+    let previousBottom = Number.NEGATIVE_INFINITY;
+
+    return centers.map((center, bracketIndex) => {
+      const renderedHeight = getRenderedBracketHeight(round[bracketIndex]);
+      const halfHeight = renderedHeight / midpointDivisor;
+      // Source-based centers can compress mixed losers rounds; keep each
+      // rendered bracket separated from the previous one in the same column.
+      const minimumCenter = previousBottom + bracketGap + halfHeight;
+      const adjustedCenter = Math.max(center, minimumCenter);
+
+      previousBottom = adjustedCenter + halfHeight;
+
+      return adjustedCenter;
+    });
+  }
+
+  function getDefaultSourceSlots(bracketIndex: number) {
+    return [
+      bracketIndex * playersPerBracket,
+      bracketIndex * playersPerBracket + secondPlayerIndex
+    ];
+  }
+
+  function getFiniteSourceSlots(bracket, bracketIndex: number) {
+    return (bracket.sourceSlots ?? getDefaultSourceSlots(bracketIndex)).filter(
+      (sourceSlot) => Number.isFinite(sourceSlot)
+    );
+  }
+
+  function getLayoutSourceCenters(
+    sectionLabel: string,
+    roundCenters,
+    roundIndex: number,
+    bracket,
+    bracketIndex: number,
+    sectionY: number
+  ) {
+    const previousRoundCenters = roundCenters[roundIndex - 1];
+    const sourceSlots = getFiniteSourceSlots(bracket, bracketIndex);
+
+    return sourceSlots
+      .map((sourceSlot) => {
+        const previousCenter = previousRoundCenters[sourceSlot];
+
+        if (Number.isFinite(previousCenter)) {
+          return previousCenter;
+        }
+
+        return sectionLabel === 'Losers Bracket'
+          ? null
+          : getSectionDefaultCenter(sourceSlot, sectionY);
+      })
+      .filter((center) => Number.isFinite(center));
+  }
+
+  const sectionLayouts = sections.map((section) => {
+    const roundCenters = [];
+    const sectionY = currentY;
+
+    roundCenters[firstRoundIndex] = preventRoundOverlaps(
+      section.rounds[firstRoundIndex],
+      section.rounds[firstRoundIndex].map((_, index) =>
+        getSectionDefaultCenter(index, sectionY)
+      )
+    );
+
+    for (
+      let roundIndex = firstRoundIndex + 1;
+      roundIndex < section.rounds.length;
+      roundIndex++
+    ) {
+      const rawRoundCenters = section.rounds[roundIndex].map(
+        (bracket, bracketIndex) => {
+          const sourceCenters = getLayoutSourceCenters(
+            section.label,
+            roundCenters,
+            roundIndex,
+            bracket,
+            bracketIndex,
+            sectionY
+          );
+
+          if (sourceCenters.length === 0) {
+            return getSectionDefaultCenter(bracketIndex, sectionY);
+          }
+
+          return (
+            sourceCenters.reduce((total, center) => total + center, 0) /
+            sourceCenters.length
+          );
+        }
+      );
+
+      roundCenters[roundIndex] = preventRoundOverlaps(
+        section.rounds[roundIndex],
+        rawRoundCenters
+      );
+    }
+
+    const bracketBottoms = section.rounds.flatMap((round, roundIndex) =>
+      round.map((bracket, bracketIndex) => {
+        const renderedHeight = getRenderedBracketHeight(bracket);
+
+        return (
+          roundCenters[roundIndex][bracketIndex] +
+          renderedHeight / midpointDivisor
+        );
+      })
+    );
+    const hasChampionColumn = section.label === 'Final';
+    const finalCenter = roundCenters[section.rounds.length - 1][0];
+    const championBottom = hasChampionColumn
+      ? Math.max(
+          finalCenter - championLabelOffset + championLabelHeight,
+          finalCenter - championNameOffset + championNameHeight
+        )
+      : 0;
+    const height =
+      Math.max(...bracketBottoms, championBottom) - sectionY;
+    const layout = {
+      ...section,
+      y: sectionY,
+      height,
+      roundCenters,
+      hasChampionColumn
+    };
+
+    currentY += height + sectionGap;
+
+    return layout;
+  });
+  const width =
+    padding * 2 +
+    Math.max(
+      ...sectionLayouts.map(
+        (section) =>
+          section.rounds.length * bracketWidth +
+          (section.rounds.length - 1) * roundGap +
+          (section.hasChampionColumn ? roundGap + championWidth : 0)
+      )
+    );
+  const height = Math.max(padding, currentY - sectionGap + padding);
+
+  function getRoundX(roundIndex: number) {
+    return padding + roundIndex * (bracketWidth + roundGap);
+  }
+
+  function renderLine(x1: number, y1: number, x2: number, y2: number) {
+    output.push(
+      `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${strokeColor}" stroke-width="${connectorStrokeWidth}" />`
+    );
+  }
+
+  function renderPlayer(font: CodingFont, x: number, y: number, isWinner: boolean) {
+    const fontFamily = getSvgFontFamily(font);
+    const family = escapeXml(font.family);
+    const textClipId = `font-label-${clipId++}`;
+    const textY = y + playerHeight / midpointDivisor;
+
+    defs.push(
+      `<clipPath id="${textClipId}"><rect x="${x}" y="${y}" width="${bracketWidth}" height="${playerHeight}" /></clipPath>`
+    );
+    output.push(`<g>
+<rect x="${x}" y="${y}" width="${bracketWidth}" height="${playerHeight}" rx="${rectRadius}" fill="${isWinner ? winnerColor : surfaceColor}" stroke="${isWinner ? winnerStrokeColor : strokeColor}" />
+<text x="${x + fontNameTextInset}" y="${textY}" dominant-baseline="middle" fill="${isWinner ? primaryTextColor : textColor}" font-size="${playerTextFontSize}" font-family="${fontFamily}" clip-path="url(#${textClipId})">${family}</text>
+</g>`);
+  }
+
+  function renderBracket(match, x: number, center: number) {
+    if (match.players.length === singlePlayerCount) {
+      renderPlayer(
+        match.players[firstPlayerIndex],
+        x,
+        center - playerHeight / midpointDivisor,
+        true
+      );
+      return;
+    }
+
+    match.players.forEach((font, playerIndex) => {
+      const playerY =
+        playerIndex === firstPlayerIndex
+          ? center - playerGap / midpointDivisor - playerHeight
+          : center + playerGap / midpointDivisor;
+      renderPlayer(font, x, playerY, match?.winner?.family === font.family);
+    });
+  }
+
+  sectionLayouts.forEach((section) => {
+    output.push(`<g>
+<rect x="${padding}" y="${section.y}" width="${width}" height="${sectionLabelHeight}" rx="${rectRadius}" fill="${winnerStrokeColor}" />
+<text x="${padding + fontNameTextInset}" y="${section.y + sectionLabelHeight / midpointDivisor}" dominant-baseline="middle" fill="${onPrimaryTextColor}" font-size="${labelFontSize}" font-weight="${labelFontWeight}" font-family="ui-monospace, monospace">${section.label}</text>
+</g>`);
+
+    section.rounds.forEach((round, roundIndex) => {
+      if (roundIndex === firstRoundIndex) {
+        return;
+      }
+
+      round.forEach((bracket, bracketIndex) => {
+        const previousRoundIndex = roundIndex - 1;
+        const previousX = getRoundX(previousRoundIndex) + bracketWidth;
+        const targetX = getRoundX(roundIndex);
+        const joinX = previousX + roundGap / midpointDivisor;
+        const targetY = section.roundCenters[roundIndex][bracketIndex];
+        const sourceYs = getFiniteSourceSlots(bracket, bracketIndex)
+          .map(
+            (sourceSlot) =>
+              section.roundCenters[previousRoundIndex][sourceSlot]
+          )
+          .filter((center) => Number.isFinite(center));
+
+        if (sourceYs.length === 0) {
+          return;
+        }
+
+        if (sourceYs.length === singlePlayerCount) {
+          const sourceY = sourceYs[firstPlayerIndex];
+
+          renderLine(previousX, sourceY, joinX, sourceY);
+          renderLine(joinX, sourceY, joinX, targetY);
+          renderLine(joinX, targetY, targetX, targetY);
+          return;
+        }
+
+        sourceYs.forEach((sourceY) =>
+          renderLine(previousX, sourceY, joinX, sourceY)
+        );
+        renderLine(
+          joinX,
+          sourceYs[firstPlayerIndex],
+          joinX,
+          sourceYs[secondPlayerIndex]
+        );
+        renderLine(joinX, targetY, targetX, targetY);
+      });
+    });
+
+    section.rounds.forEach((round, roundIndex) => {
+      const x = getRoundX(roundIndex);
+
+      round.forEach((match, matchIndex) => {
+        renderBracket(match, x, section.roundCenters[roundIndex][matchIndex]);
+      });
+    });
+
+    if (section.hasChampionColumn) {
+      const finalRoundIndex = section.rounds.length - 1;
+      const finalCenter = section.roundCenters[finalRoundIndex][0];
+      const finalX = getRoundX(finalRoundIndex) + bracketWidth;
+      const championX = finalX + roundGap;
+      const championClipId = `font-label-${clipId++}`;
+      const championLabelY = finalCenter - championLabelOffset;
+      const championLabelTextX = championX + championWidth / midpointDivisor;
+      const championLabelTextY =
+        championLabelY + championLabelHeight / midpointDivisor;
+      const championNameY = finalCenter - championNameOffset;
+      const championTextY = championNameY + championNameHeight / midpointDivisor;
+
+      renderLine(finalX, finalCenter, championX, finalCenter);
+      defs.push(
+        `<clipPath id="${championClipId}"><rect x="${championX}" y="${championNameY}" width="${championWidth}" height="${championNameHeight}" /></clipPath>`
+      );
+      output.push(`<g>
+<rect x="${championX}" y="${championLabelY}" width="${championWidth}" height="${championLabelHeight}" rx="${rectRadius}" fill="${winnerStrokeColor}" />
+<text x="${championLabelTextX}" y="${championLabelTextY}" text-anchor="middle" dominant-baseline="middle" fill="${onPrimaryTextColor}" font-size="${championLabelFontSize}" font-weight="${championLabelFontWeight}" font-family="ui-monospace, monospace">Winner</text>
+<rect x="${championX}" y="${championNameY}" width="${championWidth}" height="${championNameHeight}" rx="${rectRadius}" fill="${winnerColor}" stroke="${winnerStrokeColor}" />
+<text x="${championX + fontNameTextInset}" y="${championTextY}" dominant-baseline="middle" fill="${primaryTextColor}" font-size="${championTextFontSize}" font-family="${getSvgFontFamily(currentBracket.winner)}" clip-path="url(#${championClipId})">${escapeXml(currentBracket.winner.family)}</text>
+</g>`);
+    }
+  });
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+<defs>
+${defs.join('\n')}
+</defs>
+${output.join('\n')}
+</svg>`;
+}
+
 async function exportTournamentSvg() {
   await document.fonts?.ready;
 
@@ -621,6 +1073,16 @@ function chooseWinner(player, button) {
         {#if fontSubsetImportMessage}
           <p class="text-sm opacity-70">{fontSubsetImportMessage}</p>
         {/if}
+        <label class="flex flex-col gap-1 text-sm">
+          <span class="font-bold uppercase tracking-wide opacity-70"
+            >Elimination</span>
+          <select
+            class="select"
+            bind:value="{$tournamentEliminationMode}">
+            <option value="{TournamentEliminationMode.Single}">Single</option>
+            <option value="{TournamentEliminationMode.Double}">Double</option>
+          </select>
+        </label>
         <div class="table-container max-h-80 overflow-auto rounded-none">
           {#each filteredTournamentFonts as font (font.family)}
             <label
