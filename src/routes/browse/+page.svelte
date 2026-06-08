@@ -46,16 +46,16 @@ $: if ($searchTerm) {
   <svelte:fragment slot="sidebarLeft">
     <Sidebar alwaysOpen="{true}">
       <SearchBar />
-      <FontTable fonts="{fonts}" />
+      <FontTable fonts="{fonts}" showNames="{true}" />
     </Sidebar>
   </svelte:fragment>
   <svelte:fragment slot="pageHeader">
-    <Controls />
+    <Controls showNameEnabled="{false}" />
   </svelte:fragment>
   <div
     class="bg-surface-50-900-token grid h-full grid-cols-1 gap-4 p-4 md:grid-cols-2">
     <div class="flex flex-col gap-4" class:col-span-2="{!$fontFamilyRight}">
-      <FontHeader font="{getFontByFamilyName($fontFamily)}" />
+      <FontHeader font="{getFontByFamilyName($fontFamily)}" showNames="{true}" />
       <MonacoEditor
         class="overflow-hidden rounded-container-token"
         fontSize="{$fontSize}"
@@ -67,7 +67,9 @@ $: if ($searchTerm) {
     </div>
     {#if $fontFamilyRight}
       <div class="relative hidden flex-col gap-4 md:flex">
-        <FontHeader font="{getFontByFamilyName($fontFamilyRight)}" />
+        <FontHeader
+          font="{getFontByFamilyName($fontFamilyRight)}"
+          showNames="{true}" />
         <MonacoEditor
           class="overflow-hidden rounded-container-token"
           fontSize="{$fontSize}"

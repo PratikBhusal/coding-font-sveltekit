@@ -47,6 +47,8 @@ $: filteredTournamentFonts = fonts.filter((font) =>
 $: canStartGame = selectedTournamentFonts.length >= 2;
 
 onMount(async () => {
+  $showName = false;
+
   if ($tournamentFontFamilies === null) {
     $tournamentFontFamilies = fonts.map((font) => font.family);
   }

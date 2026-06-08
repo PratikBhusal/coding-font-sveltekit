@@ -18,6 +18,9 @@ import { getFontStyle } from './fontFeatures';
 import type { CodingFont } from './codingFonts';
 
 export let fonts: CodingFont[] = [];
+export let showNames: boolean | undefined = undefined;
+
+$: shouldShowName = showNames ?? $showName;
 
 function getFontPath(family: string) {
   return `${base}/${encodeURIComponent(family.replace(/\s+/g, ''))}`;
@@ -48,7 +51,7 @@ function getFontPath(family: string) {
               $fontLigatures
             )}"
             class="max-w-[9rem] truncate !whitespace-nowrap"
-            >{$showName ? font.family : 'ABC abc 123'}</td>
+            >{shouldShowName ? font.family : 'ABC abc 123'}</td>
           <td class="hidden md:table-cell">
             <button
               class="variant-ringed-surface btn btn-sm"

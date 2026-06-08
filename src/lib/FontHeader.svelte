@@ -5,11 +5,13 @@ import { showName } from '$lib/store';
 import type { CodingFont } from './codingFonts';
 
 export let font: CodingFont;
+export let showNames: boolean | undefined = undefined;
 
 $: fontPath = `${base}/${encodeURIComponent(font.family.replace(/\s+/g, ''))}`;
+$: shouldShowName = showNames ?? $showName;
 </script>
 
-{#if $showName}
+{#if shouldShowName}
   <div class="flex flex-row items-center justify-between">
     <a
       href="{fontPath}"

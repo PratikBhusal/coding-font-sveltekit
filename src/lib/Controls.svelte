@@ -26,15 +26,19 @@ const editorLanguages = [
   { id: 'javascript', displayName: 'JavaScript' },
   { id: 'python', displayName: 'Python' }
 ];
+
+export let showNameEnabled = true;
 </script>
 
 <div
   class="bg-surface-100-800-token flex w-full flex-row gap-4 overflow-x-auto whitespace-nowrap border-b border-surface-400 px-4 py-2 dark:border-surface-500">
   <slot />
-  <label class="flex items-center space-x-2">
-    <input class="checkbox" type="checkbox" bind:checked="{$showName}" />
-    <span>Show Name</span>
-  </label>
+  {#if showNameEnabled}
+    <label class="flex items-center space-x-2">
+      <input class="checkbox" type="checkbox" bind:checked="{$showName}" />
+      <span>Show Name</span>
+    </label>
+  {/if}
   <label class="flex flex-row items-baseline gap-2 whitespace-nowrap">
     <span>Theme: </span>
     <select class="select min-w-[6rem]" bind:value="{$selectedTheme}" size="1">
