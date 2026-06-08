@@ -33,6 +33,18 @@ import {
 } from '$lib/store';
 import type { CodingFont } from '$lib';
 
+type SvgTournamentMatch = {
+  players: CodingFont[];
+  winner?: CodingFont | null;
+  loser?: CodingFont | null;
+};
+
+enum SvgTournamentSection {
+  Winners = 'Winners Bracket',
+  Losers = 'Losers Bracket',
+  Final = 'Final'
+}
+
 export let data: { fonts: CodingFont[] };
 let { fonts } = data;
 let game;
@@ -184,6 +196,33 @@ function getStandardThemeColor(themeVariable: StandardThemeProperty) {
   const colorValue = standardThemeProperties[themeVariable];
 
   return `rgb(${colorValue.split(/\s+/).join(', ')})`;
+}
+
+function createWinnersLoserMatchLabelMap(winnersRounds: SvgTournamentMatch[][]) {
+  const loserMatchLabelMap = new Map<string, string>();
+  let matchNumber = 1;
+
+  winnersRounds.forEach((round) => {
+    round.forEach((match) => {
+      if (match.players.length < 2) {
+        return;
+      }
+
+      if (match.loser) {
+        loserMatchLabelMap.set(match.loser.family, String(matchNumber));
+      }
+
+      matchNumber++;
+    });
+  });
+
+  return loserMatchLabelMap;
+}
+
+function getSvgFontLabel(font: CodingFont, matchLabel?: string) {
+  const prefix = matchLabel ? `${matchLabel}: ` : '';
+
+  return `${prefix}${font.family}`;
 }
 
 function createTournamentSvg() {
@@ -581,15 +620,15 @@ function createDoubleEliminationTournamentSvg() {
 
   const sections = [
     {
-      label: 'Winners Bracket',
+      label: SvgTournamentSection.Winners,
       rounds: game.winnersRounds ?? []
     },
     {
-      label: 'Losers Bracket',
+      label: SvgTournamentSection.Losers,
       rounds: game.losersRounds ?? []
     },
     {
-      label: 'Final',
+      label: SvgTournamentSection.Final,
       rounds: game.finalRounds ?? []
     }
   ].filter((section) => section.rounds.length > 0);
@@ -638,6 +677,7 @@ function createDoubleEliminationTournamentSvg() {
   const sectionLabelHeight = scaleLayout(24 / baseLabelFontSize);
   const labelFontSize = scaleLayout(12 / baseLabelFontSize);
   const labelFontWeight = 700;
+  const matchNumberLabelGap = scaleLayout(4 / baseLabelFontSize);
   const strokeColor = getStandardThemeColor('--color-primary-500');
   const textColor = getStandardThemeColor('--theme-font-color-base');
   const primaryTextColor = getStandardThemeColor('--color-primary-700');
@@ -645,8 +685,82 @@ function createDoubleEliminationTournamentSvg() {
   const winnerColor = getStandardThemeColor('--color-primary-300');
   const winnerStrokeColor = getStandardThemeColor('--color-primary-500');
   const onPrimaryTextColor = getStandardThemeColor('--on-primary');
-  const fontNameMeasurements = sectionFonts.map((font) =>
-    measureSvgTextBounds(font.family, measuredLabelFontSize, [
+  const winnersLoserMatchLabelMap = createWinnersLoserMatchLabelMap(
+    game.winnersRounds ?? []
+  );
+  const firstLosersMatchByFontFamily = new Map();
+  sections
+    .find((section) => section.label === SvgTournamentSection.Losers)
+    ?.rounds.forEach((round) => {
+      round.forEach((match) => {
+        if (match.players.length === singlePlayerCount) {
+          return;
+        }
+
+        match.players.forEach((font) => {
+          if (!firstLosersMatchByFontFamily.has(font.family)) {
+            firstLosersMatchByFontFamily.set(font.family, match);
+          }
+        });
+      });
+    });
+
+  function getMatchLabel(
+    sectionLabel: SvgTournamentSection,
+    match,
+    font: CodingFont
+  ) {
+    return sectionLabel === SvgTournamentSection.Losers
+      && firstLosersMatchByFontFamily.get(font.family) === match
+      ? winnersLoserMatchLabelMap.get(font.family)
+      : undefined;
+  }
+
+  function getMatchNumberLabel(
+    sectionLabel: SvgTournamentSection,
+    match
+  ) {
+    if (
+      sectionLabel !== SvgTournamentSection.Winners ||
+      !match.loser
+    ) {
+      return undefined;
+    }
+
+    const matchLabel = winnersLoserMatchLabelMap.get(match.loser.family);
+
+    return matchLabel;
+  }
+
+  function isHiddenMatch(sectionLabel: SvgTournamentSection, match) {
+    return (
+      sectionLabel === SvgTournamentSection.Losers &&
+      match.players.length === singlePlayerCount
+    );
+  }
+
+  const measuredFontLabels = sections
+    .flatMap((section) =>
+      section.rounds.flatMap((round) =>
+        round.flatMap((match) =>
+          isHiddenMatch(section.label, match)
+            ? []
+            : match.players.map((font) => ({
+                font,
+                label: getSvgFontLabel(
+                  font,
+                  getMatchLabel(section.label, match, font)
+                )
+              }))
+        )
+      )
+    )
+    .concat({
+      font: currentBracket.winner,
+      label: currentBracket.winner.family
+    });
+  const fontNameMeasurements = measuredFontLabels.map(({ font, label }) =>
+    measureSvgTextBounds(label, measuredLabelFontSize, [
       getCssFontFamily(font),
       getCssMonospaceFallback()
     ])
@@ -731,10 +845,46 @@ function createDoubleEliminationTournamentSvg() {
     );
   }
 
-  function getRenderedBracketHeight(match) {
+  function getMatchNumberLabelHeight(
+    sectionLabel: SvgTournamentSection,
+    match
+  ) {
+    if (isHiddenMatch(sectionLabel, match)) {
+      return 0;
+    }
+
+    return getMatchNumberLabel(sectionLabel, match)
+      ? labelFontSize + matchNumberLabelGap
+      : 0;
+  }
+
+  function getRenderedTopOffset(
+    sectionLabel: SvgTournamentSection,
+    match
+  ) {
+    if (isHiddenMatch(sectionLabel, match)) {
+      return 0;
+    }
+
+    const playerOffset =
+      match.players.length === singlePlayerCount
+        ? playerHeight / midpointDivisor
+        : bracketHeight / midpointDivisor;
+
+    return playerOffset + getMatchNumberLabelHeight(sectionLabel, match);
+  }
+
+  function getRenderedBottomOffset(
+    sectionLabel: SvgTournamentSection,
+    match
+  ) {
+    if (isHiddenMatch(sectionLabel, match)) {
+      return 0;
+    }
+
     return match.players.length === singlePlayerCount
-      ? playerHeight
-      : bracketHeight;
+      ? playerHeight / midpointDivisor
+      : bracketHeight / midpointDivisor;
   }
 
   function getAdvancingLineY(match, matchCenter: number) {
@@ -757,18 +907,29 @@ function createDoubleEliminationTournamentSvg() {
     return matchCenter;
   }
 
-  function preventRoundOverlaps(round, centers: number[]) {
-    let previousBottom = Number.NEGATIVE_INFINITY;
+  function preventRoundOverlaps(
+    sectionLabel: SvgTournamentSection,
+    round,
+    centers: number[],
+    minimumTop = Number.NEGATIVE_INFINITY
+  ) {
+    let previousBottom = minimumTop - bracketGap;
 
     return centers.map((center, bracketIndex) => {
-      const renderedHeight = getRenderedBracketHeight(round[bracketIndex]);
-      const halfHeight = renderedHeight / midpointDivisor;
+      const match = round[bracketIndex];
+
+      if (isHiddenMatch(sectionLabel, match)) {
+        return center;
+      }
+
+      const topOffset = getRenderedTopOffset(sectionLabel, match);
+      const bottomOffset = getRenderedBottomOffset(sectionLabel, match);
       // Source-based centers can compress mixed losers rounds; keep each
       // rendered bracket separated from the previous one in the same column.
-      const minimumCenter = previousBottom + bracketGap + halfHeight;
+      const minimumCenter = previousBottom + bracketGap + topOffset;
       const adjustedCenter = Math.max(center, minimumCenter);
 
-      previousBottom = adjustedCenter + halfHeight;
+      previousBottom = adjustedCenter + bottomOffset;
 
       return adjustedCenter;
     });
@@ -788,7 +949,7 @@ function createDoubleEliminationTournamentSvg() {
   }
 
   function getLayoutSourceCenters(
-    sectionLabel: string,
+    sectionLabel: SvgTournamentSection,
     roundCenters,
     roundIndex: number,
     bracket,
@@ -806,7 +967,7 @@ function createDoubleEliminationTournamentSvg() {
           return previousCenter;
         }
 
-        return sectionLabel === 'Losers Bracket'
+        return sectionLabel === SvgTournamentSection.Losers
           ? null
           : getSectionDefaultCenter(sourceSlot, sectionY);
       })
@@ -818,10 +979,12 @@ function createDoubleEliminationTournamentSvg() {
     const sectionY = currentY;
 
     roundCenters[firstRoundIndex] = preventRoundOverlaps(
+      section.label,
       section.rounds[firstRoundIndex],
       section.rounds[firstRoundIndex].map((_, index) =>
         getSectionDefaultCenter(index, sectionY)
-      )
+      ),
+      sectionY + sectionLabelHeight
     );
 
     for (
@@ -852,6 +1015,7 @@ function createDoubleEliminationTournamentSvg() {
       );
 
       roundCenters[roundIndex] = preventRoundOverlaps(
+        section.label,
         section.rounds[roundIndex],
         rawRoundCenters
       );
@@ -859,15 +1023,13 @@ function createDoubleEliminationTournamentSvg() {
 
     const bracketBottoms = section.rounds.flatMap((round, roundIndex) =>
       round.map((bracket, bracketIndex) => {
-        const renderedHeight = getRenderedBracketHeight(bracket);
-
         return (
           roundCenters[roundIndex][bracketIndex] +
-          renderedHeight / midpointDivisor
+          getRenderedBottomOffset(section.label, bracket)
         );
       })
     );
-    const hasChampionColumn = section.label === 'Final';
+    const hasChampionColumn = section.label === SvgTournamentSection.Final;
     const finalCenter = roundCenters[section.rounds.length - 1][0];
     const championBottom = hasChampionColumn
       ? Math.max(
@@ -911,9 +1073,15 @@ function createDoubleEliminationTournamentSvg() {
     );
   }
 
-  function renderPlayer(font: CodingFont, x: number, y: number, isWinner: boolean) {
+  function renderPlayer(
+    font: CodingFont,
+    x: number,
+    y: number,
+    isWinner: boolean,
+    matchLabel?: string
+  ) {
     const fontFamily = getSvgFontFamily(font);
-    const family = escapeXml(font.family);
+    const family = escapeXml(getSvgFontLabel(font, matchLabel));
     const textClipId = `font-label-${clipId++}`;
     const textY = y + playerHeight / midpointDivisor;
 
@@ -926,23 +1094,60 @@ function createDoubleEliminationTournamentSvg() {
 </g>`);
   }
 
-  function renderBracket(match, x: number, center: number) {
+  function renderMatchNumberLabel(
+    sectionLabel: SvgTournamentSection,
+    match,
+    x: number,
+    topPlayerY: number
+  ) {
+    const matchNumberLabel = getMatchNumberLabel(sectionLabel, match);
+
+    if (!matchNumberLabel) {
+      return;
+    }
+
+    output.push(
+      `<text x="${x + fontNameTextInset}" y="${topPlayerY - matchNumberLabelGap}" fill="${primaryTextColor}" font-size="${labelFontSize}" font-weight="${labelFontWeight}" font-family="ui-monospace, monospace">${escapeXml(matchNumberLabel)}</text>`
+    );
+  }
+
+  function renderBracket(
+    match,
+    x: number,
+    center: number,
+    sectionLabel: SvgTournamentSection
+  ) {
+    if (isHiddenMatch(sectionLabel, match)) {
+      return;
+    }
+
     if (match.players.length === singlePlayerCount) {
       renderPlayer(
         match.players[firstPlayerIndex],
         x,
         center - playerHeight / midpointDivisor,
-        true
+        true,
+        getMatchLabel(sectionLabel, match, match.players[firstPlayerIndex])
       );
       return;
     }
 
+    const topPlayerY = center - playerGap / midpointDivisor - playerHeight;
+
+    renderMatchNumberLabel(sectionLabel, match, x, topPlayerY);
+
     match.players.forEach((font, playerIndex) => {
       const playerY =
         playerIndex === firstPlayerIndex
-          ? center - playerGap / midpointDivisor - playerHeight
+          ? topPlayerY
           : center + playerGap / midpointDivisor;
-      renderPlayer(font, x, playerY, match?.winner?.family === font.family);
+      renderPlayer(
+        font,
+        x,
+        playerY,
+        match?.winner?.family === font.family,
+        getMatchLabel(sectionLabel, match, font)
+      );
     });
   }
 
@@ -971,6 +1176,10 @@ function createDoubleEliminationTournamentSvg() {
 
             if (!sourceBracket || !Number.isFinite(sourceCenter)) {
               return sourceCenter;
+            }
+
+            if (isHiddenMatch(section.label, sourceBracket)) {
+              return null;
             }
 
             return getAdvancingLineY(sourceBracket, sourceCenter);
@@ -1007,7 +1216,12 @@ function createDoubleEliminationTournamentSvg() {
       const x = getRoundX(roundIndex);
 
       round.forEach((match, matchIndex) => {
-        renderBracket(match, x, section.roundCenters[roundIndex][matchIndex]);
+        renderBracket(
+          match,
+          x,
+          section.roundCenters[roundIndex][matchIndex],
+          section.label
+        );
       });
     });
 
