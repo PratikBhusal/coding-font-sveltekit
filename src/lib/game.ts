@@ -25,6 +25,10 @@ export function createConfetti(size = 'big', position = { x: 0.5, y: 0.5 }) {
 export function createGame(initialPlayers) {
   const players = [...initialPlayers];
 
+  function getPreviousPowerOfTwo(value) {
+    return 2 ** Math.floor(Math.log2(value));
+  }
+
   function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -38,6 +42,7 @@ export function createGame(initialPlayers) {
     rounds: [],
     currentRound: -1,
     finalRound: null,
+    pendingByes: [],
 
     startGame: function () {
       const nextMatchup = this.getNextMatchup();
@@ -76,25 +81,62 @@ export function createGame(initialPlayers) {
 
     createNextRound: function () {
       this.currentRound++;
-      const winners =
-        this.rounds.length > 0
-          ? this.rounds[this.currentRound - 1]
-              .filter((matchup) => matchup.winner)
-              .map((matchup) => matchup.winner)
-          : players;
+      let winners;
+
+      if (this.rounds.length > 0) {
+        winners = this.rounds[this.currentRound - 1]
+          .filter((matchup) => matchup.winner)
+          .map((matchup) => ({
+            player: matchup.winner,
+            sourceSlot: matchup.winnerSlot
+          }))
+          .concat(this.pendingByes);
+        this.pendingByes = [];
+      } else {
+        const fullRoundSize = getPreviousPowerOfTwo(players.length);
+        const playInMatchCount = players.length - fullRoundSize;
+        const playInPlayerCount = playInMatchCount * 2;
+
+        // sourceSlot tracks the post-play-in bracket slot for SVG layout.
+        // Play-in opponents share a slot because only the winner enters it.
+        winners =
+          playInMatchCount > 0
+            ? players.slice(0, playInPlayerCount).map((player, index) => ({
+                player,
+                sourceSlot: Math.floor(index / 2)
+              }))
+            : players.map((player, index) => ({
+                player,
+                sourceSlot: index
+              }));
+        this.pendingByes =
+          playInMatchCount > 0
+            ? players.slice(playInPlayerCount).map((player, index) => ({
+                player,
+                sourceSlot: playInMatchCount + index
+              }))
+            : [];
+      }
 
       for (let i = 0; i < winners.length; i += 2) {
         this.rounds[this.currentRound] = this.rounds[this.currentRound] || [];
-        const players = winners.slice(i, i + 2);
+        const matchupIndex = this.rounds[this.currentRound].length;
+        const entrants = winners.slice(i, i + 2);
+        const players = entrants.map((entrant) => entrant.player);
+        const sourceSlots = entrants.map((entrant) => entrant.sourceSlot);
         if (players.length === 1) {
           this.rounds[this.currentRound].push({
-            players: winners.slice(i, i + 2),
-            winner: players[0]
+            players,
+            sourceSlots,
+            winner: players[0],
+            winnerSlot: matchupIndex
           });
         } else {
           this.rounds[this.currentRound].push({
-            players: winners.slice(i, i + 2),
-            winner: null
+            players,
+            sourceSlots,
+            winner: null,
+            winnerSlot: matchupIndex
           });
         }
       }

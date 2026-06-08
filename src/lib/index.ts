@@ -15,8 +15,6 @@ import FontTable from './FontTable.svelte';
 import FontHeader from './FontHeader.svelte';
 import Sidebar from './Sidebar.svelte';
 import Header from './Header.svelte';
-import PlayerBadge from './PlayerBadge.svelte';
-import WinnerBadge from './WinnerBadge.svelte';
 import MonacoEditor from './MonacoEditor.svelte';
 import { monacoThemeNames, monacoThemes } from './monacoThemes';
 import codingFonts from './codingFonts';
@@ -43,8 +41,6 @@ export {
   FontTable,
   Sidebar,
   Header,
-  PlayerBadge,
-  WinnerBadge,
   /* Monaco Editor Related */
   MonacoEditor,
   monacoThemeNames,

@@ -11,8 +11,6 @@ import {
   FontHeader,
   Controls,
   MonacoEditor,
-  PlayerBadge,
-  WinnerBadge,
   createGame,
   createConfetti
 } from '$lib';
@@ -34,7 +32,6 @@ let { fonts } = data;
 let game;
 let currentBracket;
 let leftButton, rightButton;
-let tournamentBracketElement: HTMLElement;
 let fontSubsetSearch = '';
 let fontSubsetImportText = '';
 let fontSubsetImportMessage = '';
@@ -150,93 +147,386 @@ function getFontPath(familyName: string) {
   return `${base}/${encodeURIComponent(familyName.replace(/\s+/g, ''))}`;
 }
 
-function inlineComputedStyles(source: Element, target: Element) {
-  const computedStyle = window.getComputedStyle(source);
-  const style = Array.from(computedStyle)
-    .map((property) => `${property}:${computedStyle.getPropertyValue(property)}`)
-    .join(';');
-
-  target.setAttribute('style', style);
-  if (target instanceof HTMLElement) {
-    target.style.color = computedStyle.color;
-    target.style.webkitTextFillColor = computedStyle.color;
-  }
-
-  Array.from(source.children).forEach((sourceChild, index) => {
-    const targetChild = target.children[index];
-    if (targetChild) {
-      inlineComputedStyles(sourceChild, targetChild);
-    }
-  });
+function escapeXml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }
 
-function getExportBackgroundColor(element: HTMLElement) {
-  let currentElement: HTMLElement | null = element;
+function getCssFontFamily(font: CodingFont) {
+  const family = font.family.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
-  while (currentElement) {
-    const backgroundColor =
-      window.getComputedStyle(currentElement).backgroundColor;
-    if (backgroundColor && backgroundColor !== 'rgba(0, 0, 0, 0)') {
-      return backgroundColor;
-    }
-    currentElement = currentElement.parentElement;
-  }
+  return `'${family}', ui-monospace, monospace`;
+}
 
-  return window.getComputedStyle(document.body).backgroundColor || '#ffffff';
+function getCssMonospaceFallback() {
+  return 'ui-monospace, monospace';
+}
+
+function getSvgFontFamily(font: CodingFont) {
+  return escapeXml(getCssFontFamily(font));
 }
 
 function createTournamentSvg() {
-  if (!tournamentBracketElement) {
+  if (!game?.rounds?.length || !currentBracket?.winner) {
     return '';
   }
 
-  const clone = tournamentBracketElement.cloneNode(true) as HTMLElement;
-  const backgroundColor = getExportBackgroundColor(tournamentBracketElement);
-
-  inlineComputedStyles(tournamentBracketElement, clone);
-  clone.querySelectorAll('[data-font-family]').forEach((element) => {
-    const fontFamily = element.getAttribute('data-font-family');
-    if (fontFamily) {
-      element.textContent = fontFamily;
-    }
-  });
-  clone.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
-  clone.style.boxSizing = 'border-box';
-  clone.style.margin = '0';
-  clone.style.width = 'max-content';
-  clone.style.height = 'max-content';
-  clone.style.backgroundColor = backgroundColor;
-
-  const measureContainer = document.createElement('div');
-  measureContainer.style.position = 'fixed';
-  measureContainer.style.left = '-100000px';
-  measureContainer.style.top = '0';
-  measureContainer.style.visibility = 'hidden';
-  measureContainer.style.pointerEvents = 'none';
-  measureContainer.style.width = 'max-content';
-  measureContainer.style.height = 'max-content';
-  measureContainer.appendChild(clone);
-  document.body.appendChild(measureContainer);
-
-  const width = Math.ceil(clone.scrollWidth || clone.getBoundingClientRect().width);
-  const height = Math.ceil(
-    clone.scrollHeight || clone.getBoundingClientRect().height
+  const rounds = game.rounds;
+  const hasTerminalWinnerRound =
+    rounds.length > 1 &&
+    rounds[rounds.length - 1]?.length === 1 &&
+    rounds[rounds.length - 1][0]?.players?.length === 1;
+  const visibleRounds = hasTerminalWinnerRound
+    ? rounds.slice(0, -1)
+    : rounds;
+  const bracketFonts = Array.from(
+    new Map(
+      visibleRounds
+        .flatMap((round) => round.flatMap((bracket) => bracket.players))
+        .concat(currentBracket.winner)
+        .map((font) => [font.family, font])
+    ).values()
   );
-  clone.style.width = `${width}px`;
-  clone.style.height = `${height}px`;
+  // Outer whitespace around the whole exported SVG.
+  const padding = 0;
+  // First round/player positions anchor bracket tree indexing.
+  const firstRoundIndex = 0;
+  const firstPlayerIndex = 0;
+  // One-player brackets represent byes or the terminal winner round.
+  const singlePlayerCount = 1;
+  // Second player offset is used for two-player matchup lookups.
+  const secondPlayerIndex = firstPlayerIndex + singlePlayerCount;
+  // Tournament brackets pair two entrants before advancing one winner.
+  const playersPerBracket = 2;
+  // Used wherever the layout needs a visual center point.
+  const midpointDivisor = 2;
+  // Use the font size selected in the controls so exports match the UI choice.
+  const championTextFontSize = $fontSize;
+  // Ratios are based on the original SVG label size before export scaling.
+  const baseLabelFontSize = 14;
+  // Layout dimensions are derived from the label scale instead of standalone px.
+  const layoutUnit = championTextFontSize;
+  const scaleLayout = (multiplier: number) =>
+    Math.round(layoutUnit * multiplier);
+  // Hidden SVG is only used for measurement, so it should not occupy space.
+  const hiddenMeasurementSvgSize = 0;
+  // Fallback estimate for average monospace glyph width when browser SVG
+  // measurement is unavailable. Most monospace glyphs are roughly 0.6em wide.
+  const fallbackMonospaceGlyphWidthEm = 0.6;
+  // Connector line thickness between bracket rounds.
+  const connectorStrokeWidth = scaleLayout(2 / baseLabelFontSize);
+  // Corner radius for player, winner, and label rectangles.
+  const rectRadius = scaleLayout(4 / baseLabelFontSize);
+  // Player rows use the smaller label text.
+  const playerTextFontSize = scaleLayout(13 / baseLabelFontSize);
+  // Font names are left-aligned with a small inset inside their rectangles.
+  const fontNameTextInset = scaleLayout(12 / baseLabelFontSize);
+  // Height of the purple "Winner" header pill.
+  const championLabelHeight = scaleLayout(24 / baseLabelFontSize);
+  // Places the winner header above the winner font row.
+  const championLabelOffset = scaleLayout(32 / baseLabelFontSize);
+  // Font size for the "Winner" header text.
+  const championLabelFontSize = scaleLayout(12 / baseLabelFontSize);
+  // Places the winner font row below the winner header.
+  const championNameOffset = scaleLayout(4 / baseLabelFontSize);
+  // Height of the winner font row.
+  const championNameHeight = scaleLayout(36 / baseLabelFontSize);
+  // Keeps the "Winner" header visually distinct from font names.
+  const championLabelFontWeight = 700;
+  // Measure against the larger label size used in the SVG so one shared rect
+  // width can fit both player labels and the final winner label.
+  const measuredLabelFontSize = championTextFontSize;
+  const fontNameMeasurements = bracketFonts.map((font) =>
+    measureSvgTextBounds(font.family, measuredLabelFontSize, [
+      getCssFontFamily(font),
+      getCssMonospaceFallback()
+    ])
+  );
+  const bracketWidth = Math.ceil(
+    Math.max(...fontNameMeasurements.map((measurement) => measurement.right)) +
+      fontNameTextInset
+  );
+  const championWidth = bracketWidth;
+  const strokeColor = '#6366f1';
+  const textColor = '#171717';
+  const primaryTextColor = '#4a4db5';
+  const surfaceColor = '#f3f4f6';
+  const winnerColor = '#e8e8fd';
+  const winnerStrokeColor = '#6366f1';
+  // Row height tracks the label scale so text remains vertically balanced.
+  const playerHeight = scaleLayout(30 / baseLabelFontSize);
+  // Vertical gap between two players inside the same matchup.
+  const playerGap = scaleLayout(8 / baseLabelFontSize);
+  // Vertical gap between separate matchups in the same round.
+  const bracketGap = scaleLayout(22 / baseLabelFontSize);
+  // Horizontal gap reserved for connector lines between rounds.
+  const roundGap = scaleLayout(6);
+  const bracketHeight = playerHeight * playersPerBracket + playerGap;
+  const bracketStep = bracketHeight + bracketGap;
+  const roundCenters = [];
 
-  const content = new XMLSerializer().serializeToString(clone);
-  measureContainer.remove();
+  function getRoundDefaultCenter(bracketIndex: number) {
+    return padding + bracketHeight / midpointDivisor + bracketIndex * bracketStep;
+  }
+
+  function getBracketSourceSlots(bracket, bracketIndex: number) {
+    return (
+      bracket.sourceSlots ?? [
+        bracketIndex * playersPerBracket,
+        bracketIndex * playersPerBracket + secondPlayerIndex
+      ]
+    );
+  }
+
+  roundCenters[firstRoundIndex] = visibleRounds[firstRoundIndex].map(
+    (_, index) => getRoundDefaultCenter(index)
+  );
+
+  for (
+    let roundIndex = firstRoundIndex + 1;
+    roundIndex < visibleRounds.length;
+    roundIndex++
+  ) {
+    roundCenters[roundIndex] = visibleRounds[roundIndex].map(
+      (bracket, bracketIndex) => {
+        const sourceCenters = getBracketSourceSlots(bracket, bracketIndex).map(
+          (sourceSlot) =>
+            roundCenters[roundIndex - 1][sourceSlot] ??
+            getRoundDefaultCenter(sourceSlot)
+        );
+
+        if (sourceCenters.length === 0) {
+          return getRoundDefaultCenter(bracketIndex);
+        }
+
+        return (
+          sourceCenters.reduce((total, center) => total + center, 0) /
+          sourceCenters.length
+        );
+      }
+    );
+  }
+
+  const finalRoundIndex = visibleRounds.length - 1;
+  const champion = currentBracket.winner;
+  const championCenter = roundCenters[finalRoundIndex][0];
+  const width =
+    padding * 2 +
+    visibleRounds.length * bracketWidth +
+    visibleRounds.length * roundGap +
+    championWidth;
+  const bracketBottoms = visibleRounds.flatMap((round, roundIndex) =>
+    round.map((bracket, bracketIndex) => {
+      const renderedHeight =
+        bracket.players.length === singlePlayerCount
+          ? playerHeight
+          : bracketHeight;
+
+      return (
+        roundCenters[roundIndex][bracketIndex] +
+        renderedHeight / midpointDivisor
+      );
+    })
+  );
+  const championBottom = Math.max(
+    championCenter - championLabelOffset + championLabelHeight,
+    championCenter - championNameOffset + championNameHeight
+  );
+  const height = padding + Math.max(...bracketBottoms, championBottom);
+  const defs = [];
+  const output = [];
+  let clipId = 0;
+
+  function getRoundX(roundIndex: number) {
+    return padding + roundIndex * (bracketWidth + roundGap);
+  }
+
+  function measureSvgTextBounds(
+    value: string,
+    fontSize: number,
+    fontFamilies: string[]
+  ) {
+    // Fallback estimate for average monospace glyph width when browser SVG
+    // measurement is unavailable. Most monospace glyphs are roughly 0.6em wide.
+    if (typeof document === 'undefined') {
+      return {
+        left: 0,
+        right: value.length * fontSize * fallbackMonospaceGlyphWidthEm
+      };
+    }
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+
+    svg.setAttribute('width', String(hiddenMeasurementSvgSize));
+    svg.setAttribute('height', String(hiddenMeasurementSvgSize));
+    svg.style.position = 'absolute';
+    svg.style.visibility = 'hidden';
+    svg.style.overflow = 'visible';
+    document.body.appendChild(svg);
+
+    try {
+      const measurements = fontFamilies.map((fontFamily) => {
+        const text = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'text'
+        );
+
+        text.setAttribute('x', '0');
+        text.setAttribute('y', '0');
+        text.setAttribute('font-size', String(fontSize));
+        text.setAttribute('font-family', fontFamily);
+        text.textContent = value;
+        svg.appendChild(text);
+
+        const bounds = text.getBBox();
+
+        text.remove();
+
+        return {
+          left: Math.max(0, -bounds.x),
+          right: bounds.x + bounds.width
+        };
+      });
+
+      return {
+        left: Math.max(...measurements.map((measurement) => measurement.left)),
+        right: Math.max(...measurements.map((measurement) => measurement.right))
+      };
+    } catch {
+      return {
+        left: 0,
+        right: value.length * fontSize * fallbackMonospaceGlyphWidthEm
+      };
+    } finally {
+      svg.remove();
+    }
+  }
+
+  function renderLine(x1: number, y1: number, x2: number, y2: number) {
+    output.push(
+      `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${strokeColor}" stroke-width="${connectorStrokeWidth}" />`
+    );
+  }
+
+  function renderPlayer(font: CodingFont, x: number, y: number, isWinner: boolean) {
+    const fontFamily = getSvgFontFamily(font);
+    const family = escapeXml(font.family);
+    const textClipId = `font-label-${clipId++}`;
+    const textY = y + playerHeight / midpointDivisor;
+
+    defs.push(
+      `<clipPath id="${textClipId}"><rect x="${x}" y="${y}" width="${bracketWidth}" height="${playerHeight}" /></clipPath>`
+    );
+    output.push(`<g>
+<rect x="${x}" y="${y}" width="${bracketWidth}" height="${playerHeight}" rx="${rectRadius}" fill="${isWinner ? winnerColor : surfaceColor}" stroke="${isWinner ? winnerStrokeColor : strokeColor}" />
+<text x="${x + fontNameTextInset}" y="${textY}" dominant-baseline="middle" fill="${isWinner ? primaryTextColor : textColor}" font-size="${playerTextFontSize}" font-family="${fontFamily}" clip-path="url(#${textClipId})">${family}</text>
+</g>`);
+  }
+
+  function renderBracket(bracket, roundIndex: number, bracketIndex: number) {
+    const x = getRoundX(roundIndex);
+    const center = roundCenters[roundIndex][bracketIndex];
+    const players = bracket.players;
+
+    if (players.length === singlePlayerCount) {
+      renderPlayer(
+        players[firstPlayerIndex],
+        x,
+        center - playerHeight / midpointDivisor,
+        true
+      );
+      return;
+    }
+
+    players.forEach((font, playerIndex) => {
+      const y =
+        playerIndex === firstPlayerIndex
+          ? center - playerGap / midpointDivisor - playerHeight
+          : center + playerGap / midpointDivisor;
+      renderPlayer(font, x, y, bracket?.winner?.family === font.family);
+    });
+  }
+
+  visibleRounds.forEach((round, roundIndex) => {
+    if (roundIndex === firstRoundIndex) {
+      return;
+    }
+
+    round.forEach((bracket, bracketIndex) => {
+      const previousRoundIndex = roundIndex - 1;
+      const previousX = getRoundX(previousRoundIndex) + bracketWidth;
+      const targetX = getRoundX(roundIndex);
+      const joinX = previousX + roundGap / midpointDivisor;
+      const targetY = roundCenters[roundIndex][bracketIndex];
+      const sourceYs = getBracketSourceSlots(bracket, bracketIndex)
+        .map((sourceSlot) => roundCenters[previousRoundIndex][sourceSlot])
+        .filter((center) => Number.isFinite(center));
+
+      if (sourceYs.length === 0) {
+        return;
+      }
+
+      if (sourceYs.length === singlePlayerCount) {
+        const sourceY = sourceYs[firstPlayerIndex];
+
+        renderLine(previousX, sourceY, joinX, sourceY);
+        renderLine(joinX, sourceY, joinX, targetY);
+        renderLine(joinX, targetY, targetX, targetY);
+        return;
+      }
+
+      sourceYs.forEach((sourceY) => renderLine(previousX, sourceY, joinX, sourceY));
+      renderLine(
+        joinX,
+        sourceYs[firstPlayerIndex],
+        joinX,
+        sourceYs[secondPlayerIndex]
+      );
+      renderLine(joinX, targetY, targetX, targetY);
+    });
+  });
+
+  visibleRounds.forEach((round, roundIndex) => {
+    round.forEach((bracket, bracketIndex) => {
+      renderBracket(bracket, roundIndex, bracketIndex);
+    });
+  });
+
+  const finalX = getRoundX(finalRoundIndex) + bracketWidth;
+  const championX = finalX + roundGap;
+  const championClipId = `font-label-${clipId++}`;
+  const championLabelY = championCenter - championLabelOffset;
+  const championLabelTextX = championX + championWidth / midpointDivisor;
+  const championLabelTextY = championLabelY + championLabelHeight / midpointDivisor;
+  const championNameY = championCenter - championNameOffset;
+  const championTextY = championNameY + championNameHeight / midpointDivisor;
+  renderLine(finalX, championCenter, championX, championCenter);
+
+  defs.push(
+    `<clipPath id="${championClipId}"><rect x="${championX}" y="${championNameY}" width="${championWidth}" height="${championNameHeight}" /></clipPath>`
+  );
+  output.push(`<g>
+<rect x="${championX}" y="${championLabelY}" width="${championWidth}" height="${championLabelHeight}" rx="${rectRadius}" fill="${winnerStrokeColor}" />
+<text x="${championLabelTextX}" y="${championLabelTextY}" text-anchor="middle" dominant-baseline="middle" fill="#ffffff" font-size="${championLabelFontSize}" font-weight="${championLabelFontWeight}" font-family="ui-monospace, monospace">Winner</text>
+<rect x="${championX}" y="${championNameY}" width="${championWidth}" height="${championNameHeight}" rx="${rectRadius}" fill="${winnerColor}" stroke="${winnerStrokeColor}" />
+<text x="${championX + fontNameTextInset}" y="${championTextY}" dominant-baseline="middle" fill="${primaryTextColor}" font-size="${championTextFontSize}" font-family="${getSvgFontFamily(champion)}" clip-path="url(#${championClipId})">${escapeXml(champion.family)}</text>
+</g>`);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-<rect width="100%" height="100%" fill="${backgroundColor}" />
-<foreignObject width="100%" height="100%">
-${content}
-</foreignObject>
+<defs>
+${defs.join('\n')}
+</defs>
+${output.join('\n')}
 </svg>`;
 }
 
-function exportTournamentSvg() {
+async function exportTournamentSvg() {
+  await document.fonts?.ready;
+
   const svg = createTournamentSvg();
   if (!svg) {
     return;
@@ -256,7 +546,7 @@ function exportTournamentSvg() {
   URL.revokeObjectURL(url);
 }
 
-async function chooseWinner(player, button) {
+function chooseWinner(player, button) {
   currentBracket = game.setWinner(player);
   game = game;
   if (currentBracket?.winner) {
@@ -268,20 +558,6 @@ async function chooseWinner(player, button) {
       x: (x + width / 2) / window.innerWidth,
       y: (y + height / 2) / window.innerHeight
     });
-  }
-  await tick();
-  scrollToBracket();
-}
-
-function scrollToBracket() {
-  const winnerElement = document.querySelector('.winner-candidate');
-  if (winnerElement) {
-    winnerElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-
-  const activeBracket = document.querySelector('.font-bracket.active');
-  if (activeBracket) {
-    activeBracket.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 }
 </script>
@@ -369,65 +645,6 @@ function scrollToBracket() {
           <IconDownload size="18" />
           <span>Export Tournament</span>
         </button>
-      {/if}
-      {#if game?.rounds.length}
-        <div class="flex items-center gap-2 px-2">
-          <span
-            class="text-sm font-bold uppercase tracking-wide opacity-70"
-            >Tournament Bracket</span>
-        </div>
-        <div
-          bind:this="{tournamentBracketElement}"
-          class="table-container rounded-none p-2">
-          <div class="font-brackets">
-            {#each game.rounds as round, index (round)}
-              {#if game.finalRound === index}
-                <div class="round-winner">
-                  <WinnerBadge>
-                    <span
-                      style="{getFontStyle(
-                        round[0].winner,
-                        $fontOpenTypeFeatures,
-                        $fontLigatures
-                      )}">
-                      {round[0].winner.family}
-                    </span>
-                  </WinnerBadge>
-                </div>
-              {:else}
-                <div class="{`round-${index + 1}`}">
-                  {#each round as bracket (bracket)}
-                    <div
-                      class="font-bracket"
-                      class:active="{bracket === currentBracket}">
-                      {#each bracket?.players as font (font)}
-                        <PlayerBadge
-                          class="{bracket?.winner?.family == font.family
-                            ? 'variant-ghost-primary'
-                            : 'variant-soft-surface'}">
-                          <span
-                            data-font-family="{font.family}"
-                            style="{getFontStyle(
-                              font,
-                              $fontOpenTypeFeatures,
-                              $fontLigatures
-                            )}">
-                            {$showName ? font.family : 'ABC abc 123'}
-                          </span>
-                        </PlayerBadge>
-                      {/each}
-                      <div
-                        class="line-bracket {bracket.players.length === 1
-                          ? 'bottom-1/2'
-                          : ''}">
-                      </div>
-                    </div>
-                  {/each}
-                </div>
-              {/if}
-            {/each}
-          </div>
-        </div>
       {/if}
     </Sidebar>
   </svelte:fragment>
