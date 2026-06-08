@@ -620,16 +620,16 @@ function createDoubleEliminationTournamentSvg() {
 
   const sections = [
     {
+      label: SvgTournamentSection.Final,
+      rounds: game.finalRounds ?? []
+    },
+    {
       label: SvgTournamentSection.Winners,
       rounds: game.winnersRounds ?? []
     },
     {
       label: SvgTournamentSection.Losers,
       rounds: game.losersRounds ?? []
-    },
-    {
-      label: SvgTournamentSection.Final,
-      rounds: game.finalRounds ?? []
     }
   ].filter((section) => section.rounds.length > 0);
   const sectionFonts = Array.from(
