@@ -66,6 +66,11 @@ function getComparisonPath(familyName: string) {
     familyName.replace(/\s+/g, '')
   )}`;
 }
+
+function clearComparison() {
+  $fontFamilyRight = '';
+  goto(getFontPath(currentFont.family));
+}
 </script>
 
 <AppShell
@@ -231,9 +236,7 @@ function getComparisonPath(familyName: string) {
           themeName="{$selectedTheme}" />
         <button
           class="variant-filled-surface btn absolute bottom-10 self-center"
-          on:click="{() => {
-            $fontFamilyRight = '';
-          }}">Clear Comparison</button>
+          on:click="{clearComparison}">Clear Comparison</button>
       </div>
     {/if}
   </div>
