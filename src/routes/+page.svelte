@@ -303,6 +303,26 @@ function createTournamentSvg() {
     );
   }
 
+  function getAdvancingLineY(bracket, bracketCenter: number) {
+    if (bracket.players.length === singlePlayerCount || !bracket.winner) {
+      return bracketCenter;
+    }
+
+    const winnerIndex = bracket.players.findIndex(
+      (player) => player.family === bracket.winner.family
+    );
+
+    if (winnerIndex === firstPlayerIndex) {
+      return bracketCenter - (playerHeight + playerGap) / midpointDivisor;
+    }
+
+    if (winnerIndex === secondPlayerIndex) {
+      return bracketCenter + (playerHeight + playerGap) / midpointDivisor;
+    }
+
+    return bracketCenter;
+  }
+
   roundCenters[firstRoundIndex] = visibleRounds[firstRoundIndex].map(
     (_, index) => getRoundDefaultCenter(index)
   );
@@ -484,7 +504,16 @@ function createTournamentSvg() {
       const joinX = previousX + roundGap / midpointDivisor;
       const targetY = roundCenters[roundIndex][bracketIndex];
       const sourceYs = getBracketSourceSlots(bracket, bracketIndex)
-        .map((sourceSlot) => roundCenters[previousRoundIndex][sourceSlot])
+        .map((sourceSlot) => {
+          const sourceBracket = visibleRounds[previousRoundIndex][sourceSlot];
+          const sourceCenter = roundCenters[previousRoundIndex][sourceSlot];
+
+          if (!sourceBracket || !Number.isFinite(sourceCenter)) {
+            return sourceCenter;
+          }
+
+          return getAdvancingLineY(sourceBracket, sourceCenter);
+        })
         .filter((center) => Number.isFinite(center));
 
       if (sourceYs.length === 0) {
@@ -708,6 +737,26 @@ function createDoubleEliminationTournamentSvg() {
       : bracketHeight;
   }
 
+  function getAdvancingLineY(match, matchCenter: number) {
+    if (match.players.length === singlePlayerCount || !match.winner) {
+      return matchCenter;
+    }
+
+    const winnerIndex = match.players.findIndex(
+      (player) => player.family === match.winner.family
+    );
+
+    if (winnerIndex === firstPlayerIndex) {
+      return matchCenter - (playerHeight + playerGap) / midpointDivisor;
+    }
+
+    if (winnerIndex === secondPlayerIndex) {
+      return matchCenter + (playerHeight + playerGap) / midpointDivisor;
+    }
+
+    return matchCenter;
+  }
+
   function preventRoundOverlaps(round, centers: number[]) {
     let previousBottom = Number.NEGATIVE_INFINITY;
 
@@ -915,10 +964,17 @@ function createDoubleEliminationTournamentSvg() {
         const joinX = previousX + roundGap / midpointDivisor;
         const targetY = section.roundCenters[roundIndex][bracketIndex];
         const sourceYs = getFiniteSourceSlots(bracket, bracketIndex)
-          .map(
-            (sourceSlot) =>
-              section.roundCenters[previousRoundIndex][sourceSlot]
-          )
+          .map((sourceSlot) => {
+            const sourceBracket = section.rounds[previousRoundIndex][sourceSlot];
+            const sourceCenter =
+              section.roundCenters[previousRoundIndex][sourceSlot];
+
+            if (!sourceBracket || !Number.isFinite(sourceCenter)) {
+              return sourceCenter;
+            }
+
+            return getAdvancingLineY(sourceBracket, sourceCenter);
+          })
           .filter((center) => Number.isFinite(center));
 
         if (sourceYs.length === 0) {
