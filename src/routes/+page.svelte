@@ -50,6 +50,7 @@ let { fonts } = data;
 let game;
 let currentBracket;
 let leftButton, rightButton;
+let desktopSidebarDefaultBreakpoint;
 let fontSubsetSearch = '';
 let fontSubsetImportText = '';
 let fontSubsetImportMessage = '';
@@ -66,6 +67,13 @@ $: canStartGame = selectedTournamentFonts.length >= 2;
 
 onMount(async () => {
   $showName = false;
+
+  if (
+    localStorage.getItem('menuOpen') === null &&
+    getComputedStyle(desktopSidebarDefaultBreakpoint).display !== 'none'
+  ) {
+    $menuOpen = true;
+  }
 
   if ($tournamentFontFamilies === null) {
     $tournamentFontFamilies = fonts.map((font) => font.family);
@@ -1294,6 +1302,11 @@ function chooseWinner(player, button) {
   }
 }
 </script>
+
+<div
+  class="pointer-events-none fixed hidden lg:block"
+  aria-hidden="true"
+  bind:this="{desktopSidebarDefaultBreakpoint}"></div>
 
 <AppShell
   slotSidebarLeft="flex relative min-w-0 {$menuOpen
