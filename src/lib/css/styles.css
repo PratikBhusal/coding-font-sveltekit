@@ -75,6 +75,7 @@
   grid-auto-columns: auto;
   grid-auto-flow: column;
   display: flex;
+  width: max-content;
 }
 
 .left-dot {
@@ -112,7 +113,7 @@
 }
 
 .round-winner {
-  flex: 1;
+  flex: none;
   align-items: center;
   margin-left: -8px;
   display: flex;
@@ -156,14 +157,6 @@
   @apply rounded-full bg-primary-500;
 }
 
-.round-1,
-.round-2,
-.round-3,
-.round-4,
-.round-5 {
-  margin-right: 8px;
-}
-
 .bracket-left {
   margin-top: 2px;
 }
@@ -173,49 +166,8 @@
   transform: rotate(180deg);
 }
 
-.round-1 .left-dot,
-.round-1 .left-line {
-  display: none;
-}
-
 .bracket-candidate .link-buttons {
   display: none;
-}
-
-.round-2 {
-  padding-top: 15px;
-}
-
-.round-2 .font-bracket {
-  height: 79px;
-  margin-bottom: 37px;
-}
-
-.round-3 {
-  padding-top: 44px;
-}
-
-.round-3 .font-bracket {
-  height: 137px;
-  margin-bottom: 95px;
-}
-
-.round-4 {
-  padding-top: 102px;
-}
-
-.round-4 .font-bracket {
-  height: 253px;
-  margin-bottom: 211px;
-}
-
-.round-5 {
-  padding-top: 218px;
-}
-
-.round-5 .font-bracket {
-  height: 485px;
-  margin-bottom: 443px;
 }
 
 .font-bracket:last-child {

@@ -38,6 +38,7 @@ let tournamentBracketElement: HTMLElement;
 let fontSubsetSearch = '';
 let fontSubsetImportText = '';
 let fontSubsetImportMessage = '';
+let showTournament = true;
 
 $: selectedTournamentFamilies = $tournamentFontFamilies ?? [];
 $: selectedTournamentFamilySet = new Set(selectedTournamentFamilies);
@@ -48,6 +49,10 @@ $: filteredTournamentFonts = fonts.filter((font) =>
   font.family.toLowerCase().includes(fontSubsetSearch.trim().toLowerCase())
 );
 $: canStartGame = selectedTournamentFonts.length >= 2;
+
+function getRoundBracketHeight(roundIndex: number) {
+  return 29 * 2 ** roundIndex + 21;
+}
 
 onMount(async () => {
   if ($tournamentFontFamilies === null) {
@@ -194,6 +199,11 @@ function createTournamentSvg() {
   const backgroundColor = getExportBackgroundColor(tournamentBracketElement);
 
   inlineComputedStyles(tournamentBracketElement, clone);
+  const bracketRow = clone.querySelector('.font-brackets') as HTMLElement | null;
+  if (bracketRow) {
+    bracketRow.style.display = 'flex';
+    bracketRow.style.width = 'max-content';
+  }
   clone.querySelectorAll('[data-font-family]').forEach((element) => {
     const fontFamily = element.getAttribute('data-font-family');
     if (fontFamily) {
@@ -268,20 +278,6 @@ async function chooseWinner(player, button) {
       x: (x + width / 2) / window.innerWidth,
       y: (y + height / 2) / window.innerHeight
     });
-  }
-  await tick();
-  scrollToBracket();
-}
-
-function scrollToBracket() {
-  const winnerElement = document.querySelector('.winner-candidate');
-  if (winnerElement) {
-    winnerElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-
-  const activeBracket = document.querySelector('.font-bracket.active');
-  if (activeBracket) {
-    activeBracket.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 }
 </script>
@@ -370,65 +366,6 @@ function scrollToBracket() {
           <span>Export Tournament</span>
         </button>
       {/if}
-      {#if game?.rounds.length}
-        <div class="flex items-center gap-2 px-2">
-          <span
-            class="text-sm font-bold uppercase tracking-wide opacity-70"
-            >Tournament Bracket</span>
-        </div>
-        <div
-          bind:this="{tournamentBracketElement}"
-          class="table-container rounded-none p-2">
-          <div class="font-brackets">
-            {#each game.rounds as round, index (round)}
-              {#if game.finalRound === index}
-                <div class="round-winner">
-                  <WinnerBadge>
-                    <span
-                      style="{getFontStyle(
-                        round[0].winner,
-                        $fontOpenTypeFeatures,
-                        $fontLigatures
-                      )}">
-                      {round[0].winner.family}
-                    </span>
-                  </WinnerBadge>
-                </div>
-              {:else}
-                <div class="{`round-${index + 1}`}">
-                  {#each round as bracket (bracket)}
-                    <div
-                      class="font-bracket"
-                      class:active="{bracket === currentBracket}">
-                      {#each bracket?.players as font (font)}
-                        <PlayerBadge
-                          class="{bracket?.winner?.family == font.family
-                            ? 'variant-ghost-primary'
-                            : 'variant-soft-surface'}">
-                          <span
-                            data-font-family="{font.family}"
-                            style="{getFontStyle(
-                              font,
-                              $fontOpenTypeFeatures,
-                              $fontLigatures
-                            )}">
-                            {$showName ? font.family : 'ABC abc 123'}
-                          </span>
-                        </PlayerBadge>
-                      {/each}
-                      <div
-                        class="line-bracket {bracket.players.length === 1
-                          ? 'bottom-1/2'
-                          : ''}">
-                      </div>
-                    </div>
-                  {/each}
-                </div>
-              {/if}
-            {/each}
-          </div>
-        </div>
-      {/if}
     </Sidebar>
   </svelte:fragment>
   <svelte:fragment slot="pageHeader">
@@ -448,50 +385,55 @@ function scrollToBracket() {
           </button>
         {/if}
       {/if}
+      <label class="flex items-center space-x-2">
+        <input class="checkbox" type="checkbox" bind:checked="{showTournament}" />
+        <span>Show Tournament</span>
+      </label>
     </Controls>
   </svelte:fragment>
-  <div
-    class="bg-surface-50-900-token grid h-full grid-cols-1 grid-rows-2 gap-4 p-4 md:grid-cols-2 md:grid-rows-1">
-    {#if currentBracket?.players?.length}
-      <div class="relative flex flex-col gap-4">
-        <FontHeader
-          font="{getFontByFamilyName(currentBracket.players[0].family)}" />
-        <MonacoEditor
-          class="overflow-hidden rounded-container-token"
-          fontSize="{$fontSize}"
-          fontFamily="{currentBracket.players[0].family}"
-          fontLigatures="{$fontLigatures}"
-          fontOpenTypeFeatures="{$fontOpenTypeFeatures}"
-          language="{$editorLanguage}"
-          themeName="{$selectedTheme}" />
-        <button
-          bind:this="{leftButton}"
-          class="variant-filled-primary btn absolute bottom-10 block self-center shadow-xl"
-          on:click="{(e) =>
-            chooseWinner(currentBracket.players[0], leftButton)}"
-          >Choose or press <kbd class="kbd">⇽</kbd></button>
-      </div>
-      <div class="relative flex flex-col gap-4">
-        <FontHeader
-          font="{getFontByFamilyName(currentBracket.players[1].family)}" />
-        <MonacoEditor
-          class="overflow-hidden rounded-container-token"
-          fontSize="{$fontSize}"
-          fontFamily="{currentBracket.players[1].family}"
-          fontLigatures="{$fontLigatures}"
-          fontOpenTypeFeatures="{$fontOpenTypeFeatures}"
-          language="{$editorLanguage}"
-          themeName="{$selectedTheme}" />
-        <button
-          bind:this="{rightButton}"
-          class="variant-filled-primary btn absolute bottom-10 block self-center shadow-xl"
-          on:click="{(e) =>
-            chooseWinner(currentBracket.players[1], rightButton)}"
-          >Choose or press <kbd class="kbd">⇾</kbd></button>
-      </div>
-    {:else if currentBracket?.winner}
-      <div
-        class="bg-surface-50-900-token border-surface-900-50-token relative col-span-1 row-span-2 border-4 p-6 text-center md:col-span-2 md:row-span-1 md:p-10">
+  <div class="bg-surface-50-900-token flex min-h-full flex-col gap-4 p-4">
+    <div
+      class="grid min-h-[36rem] flex-1 grid-cols-1 grid-rows-2 gap-4 md:grid-cols-2 md:grid-rows-1">
+      {#if currentBracket?.players?.length}
+        <div class="relative flex min-h-0 flex-col gap-4">
+          <FontHeader
+            font="{getFontByFamilyName(currentBracket.players[0].family)}" />
+          <MonacoEditor
+            class="overflow-hidden rounded-container-token"
+            fontSize="{$fontSize}"
+            fontFamily="{currentBracket.players[0].family}"
+            fontLigatures="{$fontLigatures}"
+            fontOpenTypeFeatures="{$fontOpenTypeFeatures}"
+            language="{$editorLanguage}"
+            themeName="{$selectedTheme}" />
+          <button
+            bind:this="{leftButton}"
+            class="variant-filled-primary btn absolute bottom-10 block self-center shadow-xl"
+            on:click="{(e) =>
+              chooseWinner(currentBracket.players[0], leftButton)}"
+            >Choose or press <kbd class="kbd">⇽</kbd></button>
+        </div>
+        <div class="relative flex min-h-0 flex-col gap-4">
+          <FontHeader
+            font="{getFontByFamilyName(currentBracket.players[1].family)}" />
+          <MonacoEditor
+            class="overflow-hidden rounded-container-token"
+            fontSize="{$fontSize}"
+            fontFamily="{currentBracket.players[1].family}"
+            fontLigatures="{$fontLigatures}"
+            fontOpenTypeFeatures="{$fontOpenTypeFeatures}"
+            language="{$editorLanguage}"
+            themeName="{$selectedTheme}" />
+          <button
+            bind:this="{rightButton}"
+            class="variant-filled-primary btn absolute bottom-10 block self-center shadow-xl"
+            on:click="{(e) =>
+              chooseWinner(currentBracket.players[1], rightButton)}"
+            >Choose or press <kbd class="kbd">⇾</kbd></button>
+        </div>
+      {:else if currentBracket?.winner}
+        <div
+          class="bg-surface-50-900-token border-surface-900-50-token relative col-span-1 row-span-2 border-4 p-6 text-center md:col-span-2 md:row-span-1 md:p-10">
         <img
           class="absolute bottom-0 left-0 right-0 mx-auto opacity-60"
           src="{base}/trophy.png"
@@ -545,6 +487,79 @@ function scrollToBracket() {
               <p class="mb-2">__________________________</p>
               <p class="text-center">COORDINATOR</p>
             </div>
+          </div>
+        </div>
+        </div>
+      {/if}
+    </div>
+    {#if game?.rounds.length}
+      <div
+        class="{showTournament
+          ? 'contents'
+          : 'pointer-events-none fixed left-[-100000px] top-0 h-max w-max overflow-visible opacity-0'}"
+        aria-hidden="{!showTournament}">
+        <div class="flex items-center gap-2 px-2">
+        <span class="text-sm font-bold uppercase tracking-wide opacity-70"
+          >Tournament Bracket</span>
+        </div>
+        <div
+          bind:this="{tournamentBracketElement}"
+          class="table-container rounded-none">
+          <div class="font-brackets">
+            {#each game.rounds as round, index (round)}
+              {#if game.finalRound === index}
+                <div class="round-winner">
+                  <WinnerBadge>
+                    <span
+                      style="{getFontStyle(
+                        round[0].winner,
+                        $fontOpenTypeFeatures,
+                        $fontLigatures
+                      )}">
+                      {round[0].winner.family}
+                    </span>
+                  </WinnerBadge>
+                </div>
+              {:else}
+                <div
+                  class="mr-2 flex flex-col justify-around gap-2 {index === 0
+                    ? '[&_.left-dot]:hidden [&_.left-line]:hidden'
+                    : ''}"
+                  style="--round-bracket-height: {getRoundBracketHeight(
+                    index
+                  )}px;">
+                  {#each round as bracket (bracket)}
+                    <div
+                      class="font-bracket mb-0 {bracket.players.length === 1
+                        ? 'h-fit [&_.bracket-candidate:first-child]:relative [&_.line-bracket]:top-1/2'
+                        : 'h-[var(--round-bracket-height)]'}"
+                      class:active="{bracket === currentBracket}">
+                      {#each bracket?.players as font (font)}
+                        <PlayerBadge
+                          class="{bracket?.winner?.family == font.family
+                            ? 'variant-ghost-primary'
+                            : 'variant-soft-surface'}">
+                          <span
+                            data-font-family="{font.family}"
+                            style="{getFontStyle(
+                              font,
+                              $fontOpenTypeFeatures,
+                              $fontLigatures
+                            )}">
+                            {$showName ? font.family : 'ABC abc 123'}
+                          </span>
+                        </PlayerBadge>
+                      {/each}
+                      <div
+                        class="line-bracket {bracket.players.length === 1
+                          ? 'bottom-1/2'
+                          : ''}">
+                      </div>
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+            {/each}
           </div>
         </div>
       </div>
