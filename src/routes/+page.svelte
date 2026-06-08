@@ -16,6 +16,10 @@ import {
 } from '$lib';
 import { getFontStyle } from '$lib/fontFeatures';
 import {
+  standardThemeProperties,
+  type StandardThemeProperty
+} from '$lib/standardThemeProperties';
+import {
   showName,
   selectedTheme,
   fontSize,
@@ -253,12 +257,13 @@ function createTournamentSvg() {
       fontNameTextInset
   );
   const championWidth = bracketWidth;
-  const strokeColor = '#6366f1';
-  const textColor = '#171717';
-  const primaryTextColor = '#4a4db5';
-  const surfaceColor = '#f3f4f6';
-  const winnerColor = '#e8e8fd';
-  const winnerStrokeColor = '#6366f1';
+  const strokeColor = getStandardThemeColor('--color-primary-500');
+  const textColor = getStandardThemeColor('--theme-font-color-base');
+  const primaryTextColor = getStandardThemeColor('--color-primary-700');
+  const surfaceColor = getStandardThemeColor('--color-surface-100');
+  const winnerColor = getStandardThemeColor('--color-primary-50');
+  const winnerStrokeColor = getStandardThemeColor('--color-primary-500');
+  const onPrimaryTextColor = getStandardThemeColor('--on-primary');
   // Row height tracks the label scale so text remains vertically balanced.
   const playerHeight = scaleLayout(30 / baseLabelFontSize);
   // Vertical gap between two players inside the same matchup.
@@ -345,6 +350,12 @@ function createTournamentSvg() {
 
   function getRoundX(roundIndex: number) {
     return padding + roundIndex * (bracketWidth + roundGap);
+  }
+
+  function getStandardThemeColor(themeVariable: StandardThemeProperty) {
+    const colorValue = standardThemeProperties[themeVariable];
+
+    return `rgb(${colorValue.split(/\s+/).join(', ')})`;
   }
 
   function measureSvgTextBounds(
@@ -513,7 +524,7 @@ function createTournamentSvg() {
   );
   output.push(`<g>
 <rect x="${championX}" y="${championLabelY}" width="${championWidth}" height="${championLabelHeight}" rx="${rectRadius}" fill="${winnerStrokeColor}" />
-<text x="${championLabelTextX}" y="${championLabelTextY}" text-anchor="middle" dominant-baseline="middle" fill="#ffffff" font-size="${championLabelFontSize}" font-weight="${championLabelFontWeight}" font-family="ui-monospace, monospace">Winner</text>
+<text x="${championLabelTextX}" y="${championLabelTextY}" text-anchor="middle" dominant-baseline="middle" fill="${onPrimaryTextColor}" font-size="${championLabelFontSize}" font-weight="${championLabelFontWeight}" font-family="ui-monospace, monospace">Winner</text>
 <rect x="${championX}" y="${championNameY}" width="${championWidth}" height="${championNameHeight}" rx="${rectRadius}" fill="${winnerColor}" stroke="${winnerStrokeColor}" />
 <text x="${championX + fontNameTextInset}" y="${championTextY}" dominant-baseline="middle" fill="${primaryTextColor}" font-size="${championTextFontSize}" font-family="${getSvgFontFamily(champion)}" clip-path="url(#${championClipId})">${escapeXml(champion.family)}</text>
 </g>`);
