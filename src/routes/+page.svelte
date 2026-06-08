@@ -261,7 +261,7 @@ function createTournamentSvg() {
   const textColor = getStandardThemeColor('--theme-font-color-base');
   const primaryTextColor = getStandardThemeColor('--color-primary-700');
   const surfaceColor = getStandardThemeColor('--color-surface-100');
-  const winnerColor = getStandardThemeColor('--color-primary-50');
+  const winnerColor = getStandardThemeColor('--color-primary-300');
   const winnerStrokeColor = getStandardThemeColor('--color-primary-500');
   const onPrimaryTextColor = getStandardThemeColor('--on-primary');
   // Row height tracks the label scale so text remains vertically balanced.
