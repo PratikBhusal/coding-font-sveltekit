@@ -2,7 +2,7 @@
 import { base } from '$app/paths';
 import { page } from '$app/stores';
 import { TabGroup, TabAnchor } from '@skeletonlabs/skeleton';
-import { IconMenu, Logo, ThemeSwitch } from '$lib';
+import { IconMenu, ThemeSwitch } from '$lib';
 import { menuOpen } from '$lib/store';
 
 $: gamePath = `${base}/`;
@@ -26,7 +26,6 @@ $: canToggleSidebar = normalizedPath !== browsePath;
         <IconMenu class="h-6 w-6" />
       </button>
     {/if}
-    <a href="{gamePath}"><Logo class="h-[3rem] w-auto" /></a>
   </div>
 
   <TabGroup
@@ -41,8 +40,6 @@ $: canToggleSidebar = normalizedPath !== browsePath;
       href="{browsePath}"
       selected="{$page.url.pathname === browsePath}"
       >Browse</TabAnchor>
-    <TabAnchor href="https://typogram.co/studio/" class="ml-4"
-      >Studio</TabAnchor>
   </TabGroup>
 
   <ThemeSwitch />
