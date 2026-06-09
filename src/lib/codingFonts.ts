@@ -11,7 +11,20 @@ export interface CodingFont {
   ligatureFeatures?: string[];
 }
 
-const codingFonts: CodingFont[] = [
+const systemFonts: CodingFont[] = [
+  {
+    family: 'ui-monospace',
+    displayName: 'System Default Monospace Font',
+    variants: ['regular'],
+    files: {},
+    siteUrl: '',
+    downloadUrl: '',
+    includeInInitialTournament: true,
+    isSystemFont: true
+  }
+];
+
+const hostedFonts: CodingFont[] = [
   {
     family: 'Anonymous Pro',
     variants: ['regular', 'italic', '700', '700italic'],
@@ -931,4 +944,8 @@ const codingFonts: CodingFont[] = [
   }*/
 ];
 
-export default codingFonts.sort((a, b) => a.family.localeCompare(b.family));
+const sortedHostedFonts = hostedFonts.sort((a, b) =>
+  a.family.localeCompare(b.family)
+);
+
+export default [...systemFonts, ...sortedHostedFonts];
