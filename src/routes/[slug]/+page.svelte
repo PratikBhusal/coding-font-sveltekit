@@ -219,8 +219,11 @@ function clearComparison() {
     <Controls />
   </svelte:fragment>
   <div
-    class="bg-surface-50-900-token grid h-full grid-cols-1 gap-4 p-4 md:grid-cols-2">
-    <div class="flex flex-col gap-4" class:col-span-2="{!$fontFamilyRight}">
+    class="bg-surface-50-900-token grid h-full grid-cols-1 gap-4 p-4 {$fontFamilyRight
+      ? 'grid-rows-2 md:grid-cols-2 md:grid-rows-1'
+      : 'md:grid-cols-2'}">
+    <div
+      class="flex flex-col gap-4 {!$fontFamilyRight ? 'md:col-span-2' : ''}">
       <FontHeader font="{currentFont}" />
       <MonacoEditor
         class="overflow-hidden rounded-container-token"
@@ -232,7 +235,7 @@ function clearComparison() {
         themeName="{$selectedTheme}" />
     </div>
     {#if $fontFamilyRight}
-      <div class="relative hidden flex-col gap-4 md:flex">
+      <div class="relative flex flex-col gap-4">
         <FontHeader font="{getFontByFamilyName($fontFamilyRight)}" />
         <MonacoEditor
           class="overflow-hidden rounded-container-token"

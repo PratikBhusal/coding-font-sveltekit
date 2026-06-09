@@ -59,9 +59,12 @@ $: if ($searchTerm) {
     <Controls showNameEnabled="{false}" />
   </svelte:fragment>
   <div
-    class="bg-surface-50-900-token grid h-full grid-cols-1 gap-4 p-4 md:grid-cols-2">
+    class="bg-surface-50-900-token grid h-full grid-cols-1 gap-4 p-4 {comparisonFont
+      ? 'grid-rows-2 md:grid-cols-2 md:grid-rows-1'
+      : 'md:grid-cols-2'}">
     {#if currentFont}
-      <div class="flex flex-col gap-4" class:col-span-2="{!comparisonFont}">
+      <div
+        class="flex flex-col gap-4 {!comparisonFont ? 'md:col-span-2' : ''}">
         <FontHeader font="{currentFont}" showNames="{true}" />
         <MonacoEditor
           class="overflow-hidden rounded-container-token"
@@ -74,7 +77,7 @@ $: if ($searchTerm) {
       </div>
     {/if}
     {#if comparisonFont}
-      <div class="relative hidden flex-col gap-4 md:flex">
+      <div class="relative flex flex-col gap-4">
         <FontHeader font="{comparisonFont}" showNames="{true}" />
         <MonacoEditor
           class="overflow-hidden rounded-container-token"
