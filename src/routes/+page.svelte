@@ -90,7 +90,7 @@ $: tournamentProgress = getTournamentProgress(
 $: tournamentProgressLabel = currentBracket?.winner
   ? ''
   : tournamentProgress
-  ? `Round ${tournamentProgress.currentMatch}/${tournamentProgress.totalMatches}`
+  ? `Match ${tournamentProgress.currentMatch}/${tournamentProgress.totalMatches}`
   : '';
 
 onMount(async () => {
