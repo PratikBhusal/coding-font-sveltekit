@@ -183,7 +183,7 @@ function clearComparison() {
                 )}"
                 class="max-w-[9rem] truncate !whitespace-nowrap"
                 >{getFontDisplayName(font)}</td>
-              <td class="hidden md:table-cell">
+              <td>
                 <button
                   class="variant-ringed-surface btn btn-sm"
                   class:!variant-ghost-primary="{font.family ===

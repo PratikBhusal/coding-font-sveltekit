@@ -32,7 +32,7 @@ function getFontPath(family: string) {
     <thead>
       <tr>
         <th>Font Family</th>
-        <th class="hidden md:table-cell">Preview</th>
+        <th>Preview</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -52,7 +52,7 @@ function getFontPath(family: string) {
             )}"
             class="max-w-[9rem] truncate !whitespace-nowrap"
             >{shouldShowName ? getFontDisplayName(font) : 'ABC abc 123'}</td>
-          <td class="hidden md:table-cell">
+          <td>
             <button
               class="variant-ringed-surface btn btn-sm"
               class:!variant-ghost-primary="{font.family === $fontFamilyRight}"
