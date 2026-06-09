@@ -35,7 +35,7 @@ $: canToggleSidebar = normalizedPath !== browsePath;
     hover=""
     active="before:content-['<'] after:content-['>']">
     <TabAnchor href="{gamePath}" selected="{$page.url.pathname === gamePath}"
-      >Game</TabAnchor>
+      >Tournament</TabAnchor>
     <TabAnchor
       href="{browsePath}"
       selected="{$page.url.pathname === browsePath}"
