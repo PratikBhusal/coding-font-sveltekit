@@ -33,6 +33,7 @@ import {
   fontOpenTypeFeatures,
   editorLanguage,
   menuOpen,
+  fontFamilyRight,
   tournamentFontFamilies,
   tournamentEliminationMode
 } from '$lib/store';
@@ -276,6 +277,10 @@ function getFontByFamilyName(familyName: string) {
 
 function getFontPath(familyName: string) {
   return `${base}/${encodeURIComponent(familyName.replace(/\s+/g, ''))}`;
+}
+
+function clearComparison() {
+  $fontFamilyRight = '';
 }
 
 function escapeXml(value: string) {
@@ -1577,8 +1582,8 @@ function chooseWinner(player, button) {
             )}">
             {getFontDisplayName(currentBracket?.winner)}
           </div>
-          {#if !currentBracket?.winner.isSystemFont}
-            <div class="variant-soft-surface btn-group self-center">
+          <div class="variant-soft-surface btn-group self-center">
+            {#if !currentBracket?.winner.isSystemFont}
               <a href="{currentBracket?.winner.siteUrl}" target="_blank">
                 <IconExternalLink size="24" />
                 <span class="hidden 2xl:block"
@@ -1589,13 +1594,14 @@ function chooseWinner(player, button) {
                 <span class="hidden 2xl:block"
                   >Download {getFontDisplayName(currentBracket?.winner)}</span>
               </a>
-              <a
-                href="{getFontPath(currentBracket?.winner.family)}">
-                <IconMaximize size="24" />
-                <span class="hidden 2xl:block">View Font Detail</span>
-              </a>
-            </div>
-          {/if}
+            {/if}
+            <a
+              href="{getFontPath(currentBracket?.winner.family)}"
+              on:click="{clearComparison}">
+              <IconMaximize size="24" />
+              <span class="hidden 2xl:block">View Font Detail</span>
+            </a>
+          </div>
           <h4 class="h4">
             For mastering the art of bézier curve pageantry, where zeros, arrows
             and curly brackets stand heroic in a 10-hour coding crusade! For
