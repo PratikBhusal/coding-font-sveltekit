@@ -61,6 +61,7 @@ export {};`,
   python: `import os
 import sublime
 from pathlib import PurePath
+from typing import Any
 
 """
 1234567890
@@ -71,13 +72,13 @@ THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG
 the quick brown fox jumps over the lazy dog
 """
 
-NUMERALS = 1234567890
-SIMILAR = "oO08 iIlL1 g9qCGQ 8%& <([{}])> .,;: ~-_="
-DIACRITICS_ETC = "â é ù ï ø ç Ã Ē Æ œ"
+NUMERALS: int = 1234567890
+SIMILAR: str = "oO08 iIlL1 g9qCGQ 8%& <([{}])> .,;: ~-_="
+DIACRITICS_ETC: str = "â é ù ï ø ç Ã Ē Æ œ"
 
 class SideBarDuplicateCommand(SideBarCommand):
 
-    def run(self, paths, **kwargs):
+    def run(self, paths: list[str], **kwargs: Any) -> None:
         source = self.get_path(paths, **kwargs)
         base, leaf = os.path.split(source)
 
