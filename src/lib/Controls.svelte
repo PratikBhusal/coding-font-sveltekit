@@ -28,12 +28,18 @@ const editorLanguages = [
 ];
 
 export let showNameEnabled = true;
+export let progressLabel = '';
 </script>
 
 <div
   class="bg-surface-100-800-token flex w-full flex-row gap-4 overflow-x-auto whitespace-nowrap border-b border-surface-400 px-4 py-2 dark:border-surface-500">
   <slot />
   {#if showNameEnabled}
+    {#if progressLabel}
+      <span
+        class="flex items-center whitespace-nowrap"
+        data-testid="tournament-progress">{progressLabel}</span>
+    {/if}
     <label class="flex items-center space-x-2">
       <input class="checkbox" type="checkbox" bind:checked="{$showName}" />
       <span>Show Name</span>

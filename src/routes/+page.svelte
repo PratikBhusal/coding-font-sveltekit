@@ -39,6 +39,11 @@ type SvgTournamentMatch = {
   loser?: CodingFont | null;
 };
 
+type TournamentProgressMatch = {
+  players?: CodingFont[];
+  winner?: CodingFont | null;
+};
+
 enum SvgTournamentSection {
   Winners = 'Winners Bracket',
   Losers = 'Losers Bracket',
@@ -49,6 +54,7 @@ export let data: { fonts: CodingFont[] };
 let { fonts } = data;
 let game;
 let currentBracket;
+let totalPlayableMatches = 0;
 let leftButton, rightButton;
 let desktopSidebarDefaultBreakpoint;
 let fontSubsetSearch = '';
@@ -64,6 +70,21 @@ $: filteredTournamentFonts = fonts.filter((font) =>
   font.family.toLowerCase().includes(fontSubsetSearch.trim().toLowerCase())
 );
 $: canStartGame = selectedTournamentFonts.length >= 2;
+$: configuredPlayableMatches = getTotalPlayableMatchCount(
+  selectedTournamentFonts.length,
+  $tournamentEliminationMode
+);
+$: tournamentProgress = getTournamentProgress(
+  game,
+  currentBracket,
+  totalPlayableMatches,
+  configuredPlayableMatches
+);
+$: tournamentProgressLabel = currentBracket?.winner
+  ? ''
+  : tournamentProgress
+  ? `Round ${tournamentProgress.currentMatch}/${tournamentProgress.totalMatches}`
+  : '';
 
 onMount(async () => {
   $showName = false;
@@ -110,6 +131,10 @@ function startGame(closeSidebar = false) {
   // Capture old game state before replacing it so
   // the first start is not treated as a restart.
   const isRestarting = Boolean(game);
+  totalPlayableMatches = getTotalPlayableMatchCount(
+    selectedTournamentFonts.length,
+    $tournamentEliminationMode
+  );
   game = createGame(selectedTournamentFonts, {
     eliminationMode: $tournamentEliminationMode
   });
@@ -169,6 +194,64 @@ function importTournamentFonts() {
   fontSubsetImportMessage = `${matchedFamilies.length} matched${
     missingFamilies.length ? `, ${missingFamilies.length} not found` : ''
   }.`;
+}
+
+function getTotalPlayableMatchCount(
+  playerCount: number,
+  eliminationMode: TournamentEliminationMode
+) {
+  if (playerCount < 2) {
+    return 0;
+  }
+
+  if (eliminationMode === TournamentEliminationMode.Double) {
+    return (playerCount - 1) * 2;
+  }
+
+  return playerCount - 1;
+}
+
+function isPlayableMatch(match: TournamentProgressMatch | null | undefined) {
+  return match?.players?.length >= 2;
+}
+
+function getCompletedPlayableMatchCount() {
+  if (!game?.rounds?.length) {
+    return 0;
+  }
+
+  return game.rounds
+    .flat()
+    .filter(
+      (match: TournamentProgressMatch) => isPlayableMatch(match) && match.winner
+    ).length;
+}
+
+function getTournamentProgress(
+  activeGame,
+  activeBracket,
+  activeTotalPlayableMatches: number,
+  fallbackTotalPlayableMatches: number
+) {
+  const totalMatches = activeGame
+    ? activeTotalPlayableMatches
+    : fallbackTotalPlayableMatches;
+
+  if (!totalMatches) {
+    return null;
+  }
+
+  const completedMatches = activeGame ? getCompletedPlayableMatchCount() : 0;
+  const hasChampion = Boolean(activeBracket?.winner);
+  const currentMatch = hasChampion
+    ? totalMatches
+    : Math.min(completedMatches + 1, totalMatches);
+
+  return {
+    currentMatch,
+    completedMatches,
+    totalMatches
+  };
 }
 
 function getFontByFamilyName(familyName: string) {
@@ -1407,7 +1490,7 @@ function chooseWinner(player, button) {
     </Sidebar>
   </svelte:fragment>
   <svelte:fragment slot="pageHeader">
-    <Controls>
+    <Controls progressLabel={tournamentProgressLabel}>
       {#if !$menuOpen}
         <button
           class="variant-filled-primary btn"
