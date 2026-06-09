@@ -7,25 +7,21 @@ import { menuOpen } from '$lib/store';
 
 $: gamePath = `${base}/`;
 $: browsePath = `${base}/browse`;
-$: normalizedPath = $page.url.pathname.replace(/\/$/, '');
-$: canToggleSidebar = normalizedPath !== browsePath;
 
 </script>
 
 <div
   class="bg-surface-100-800-token flex flex-row items-center justify-between gap-4 border-b border-surface-400 p-4 dark:border-surface-700">
   <div class="flex items-center justify-center gap-4">
-    {#if canToggleSidebar}
-      <button
-        class="variant-soft btn-icon"
-        aria-label="{$menuOpen ? 'Hide sidebar' : 'Show sidebar'}"
-        title="{$menuOpen ? 'Hide sidebar' : 'Show sidebar'}"
-        on:click="{() => {
-          $menuOpen = !$menuOpen;
-        }}">
-        <IconMenu class="h-6 w-6" />
-      </button>
-    {/if}
+    <button
+      class="variant-soft btn-icon"
+      aria-label="{$menuOpen ? 'Hide sidebar' : 'Show sidebar'}"
+      title="{$menuOpen ? 'Hide sidebar' : 'Show sidebar'}"
+      on:click="{() => {
+        $menuOpen = !$menuOpen;
+      }}">
+      <IconMenu class="h-6 w-6" />
+    </button>
   </div>
 
   <TabGroup

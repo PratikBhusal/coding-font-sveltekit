@@ -1,4 +1,5 @@
 <script lang="ts">
+import { onMount } from 'svelte';
 import { AppShell } from '@skeletonlabs/skeleton';
 import {
   Header,
@@ -17,12 +18,19 @@ import {
   fontLigatures,
   fontOpenTypeFeatures,
   editorLanguage,
+  menuOpen,
   searchTerm
 } from '$lib/store';
 import type { CodingFont } from '$lib';
 
 export let data: { fonts: CodingFont[] };
 let { fonts } = data;
+
+onMount(() => {
+  if (localStorage.getItem('menuOpen') === null) {
+    $menuOpen = true;
+  }
+});
 
 function getFontByFamilyName(familyName: string) {
   return fonts.find((font) => font.family === familyName);
@@ -38,13 +46,15 @@ $: if ($searchTerm) {
 </script>
 
 <AppShell
-  slotSidebarLeft="flex relative min-w-0 w-[calc(100vw-4rem)] resize-x overflow-auto sm:w-[24rem] lg:w-[30rem] lg:min-w-[12rem] lg:max-w-[100vw]"
+  slotSidebarLeft="flex relative min-w-0 {$menuOpen
+    ? 'w-[calc(100vw-4rem)] resize-x overflow-auto sm:w-[24rem] lg:w-[30rem] lg:min-w-[12rem] lg:max-w-[100vw]'
+    : 'w-0'}"
   slotHeader="z-30">
   <svelte:fragment slot="header">
     <Header />
   </svelte:fragment>
   <svelte:fragment slot="sidebarLeft">
-    <Sidebar alwaysOpen="{true}">
+    <Sidebar>
       <SearchBar />
       <FontTable fonts="{fonts}" showNames="{true}" />
     </Sidebar>
