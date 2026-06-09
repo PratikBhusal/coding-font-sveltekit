@@ -21,9 +21,13 @@ const sampleCodeByLanguage = {
   javascript: `// This is a single-line comment example
 
 /*
-This is a multi-line comment example
-Demonstrating various JavaScript syntax and elements
-*/
+ * 1234567890
+ * oO08 iIlL1 g9qCGQ 8%& <([{}])> .,;: ~-_=
+ *
+ * THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG
+ *
+ * the quick brown fox jumps over the lazy dog
+ */
 
 // Defining a function using arrow function syntax
 const isMultipleOf = (number, multiple) => {
@@ -55,6 +59,15 @@ isMultipleOf(l1I, oO0); // Output related to one`,
   python: `import os
 import sublime
 from pathlib import PurePath
+
+"""
+1234567890
+oO08 iIlL1 g9qCGQ 8%& <([{}])> .,;: ~-_=
+
+THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG
+
+the quick brown fox jumps over the lazy dog
+"""
 
 NUMERALS = 1234567890
 SIMILAR = "oO08 iIlL1 g9qCGQ 8%& <([{}])> .,;: ~-_="
