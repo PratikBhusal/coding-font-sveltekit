@@ -1,10 +1,12 @@
 export interface CodingFont {
   family: string;
+  displayName?: string;
   variants: string[];
   files: Record<string, string>;
   siteUrl: string;
   downloadUrl: string;
   includeInInitialTournament?: boolean;
+  isSystemFont?: boolean;
   openTypeFeatures?: string[];
   ligatureFeatures?: string[];
 }

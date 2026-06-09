@@ -15,7 +15,12 @@ import {
   createConfetti,
   TournamentEliminationMode
 } from '$lib';
-import { getFontStyle } from '$lib/fontFeatures';
+import {
+  getCssFontFamily,
+  getCssMonospaceFallback,
+  getFontDisplayName,
+  getFontStyle
+} from '$lib/fontFeatures';
 import {
   standardThemeProperties,
   type StandardThemeProperty
@@ -67,7 +72,9 @@ $: selectedTournamentFonts = fonts.filter((font) =>
   selectedTournamentFamilySet.has(font.family)
 );
 $: filteredTournamentFonts = fonts.filter((font) =>
-  font.family.toLowerCase().includes(fontSubsetSearch.trim().toLowerCase())
+  [font.family, getFontDisplayName(font)].some((fontName) =>
+    fontName.toLowerCase().includes(fontSubsetSearch.trim().toLowerCase())
+  )
 );
 $: canStartGame = selectedTournamentFonts.length >= 2;
 $: configuredPlayableMatches = getTotalPlayableMatchCount(
@@ -171,8 +178,17 @@ function toggleTournamentFont(family: string) {
 
 function importTournamentFonts() {
   const fontByNormalizedFamily = new Map(
-    fonts.map((font) => [font.family.trim().toLowerCase(), font.family])
+    fonts.map((font) => [
+      font.family.trim().toLowerCase(),
+      font.family
+    ])
   );
+  fonts.forEach((font) => {
+    fontByNormalizedFamily.set(
+      getFontDisplayName(font).trim().toLowerCase(),
+      font.family
+    );
+  });
   const importedFamilies = fontSubsetImportText
     .split(/[\n,;]+/)
     .map((family) => family.trim())
@@ -271,16 +287,6 @@ function escapeXml(value: string) {
     .replace(/'/g, '&apos;');
 }
 
-function getCssFontFamily(font: CodingFont) {
-  const family = font.family.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-
-  return `'${family}', ui-monospace, monospace`;
-}
-
-function getCssMonospaceFallback() {
-  return 'ui-monospace, monospace';
-}
-
 function getSvgFontFamily(font: CodingFont) {
   return escapeXml(getCssFontFamily(font));
 }
@@ -315,7 +321,7 @@ function createWinnersLoserMatchLabelMap(winnersRounds: SvgTournamentMatch[][]) 
 function getSvgFontLabel(font: CodingFont, matchLabel?: string) {
   const prefix = matchLabel ? `${matchLabel}: ` : '';
 
-  return `${prefix}${font.family}`;
+  return `${prefix}${getFontDisplayName(font)}`;
 }
 
 function createTournamentSvg() {
@@ -393,7 +399,7 @@ function createTournamentSvg() {
   // width can fit both player labels and the final winner label.
   const measuredLabelFontSize = championTextFontSize;
   const fontNameMeasurements = bracketFonts.map((font) =>
-    measureSvgTextBounds(font.family, measuredLabelFontSize, [
+    measureSvgTextBounds(getFontDisplayName(font), measuredLabelFontSize, [
       getCssFontFamily(font),
       getCssMonospaceFallback()
     ])
@@ -587,7 +593,7 @@ function createTournamentSvg() {
 
   function renderPlayer(font: CodingFont, x: number, y: number, isWinner: boolean) {
     const fontFamily = getSvgFontFamily(font);
-    const family = escapeXml(font.family);
+    const family = escapeXml(getFontDisplayName(font));
     const textClipId = `font-label-${clipId++}`;
     const textY = y + playerHeight / midpointDivisor;
 
@@ -692,9 +698,9 @@ function createTournamentSvg() {
   );
   output.push(`<g>
 <rect x="${championX}" y="${championLabelY}" width="${championWidth}" height="${championLabelHeight}" rx="${rectRadius}" fill="${winnerStrokeColor}" />
-<text x="${championLabelTextX}" y="${championLabelTextY}" text-anchor="middle" dominant-baseline="middle" fill="${onPrimaryTextColor}" font-size="${championLabelFontSize}" font-weight="${championLabelFontWeight}" font-family="ui-monospace, monospace">Winner</text>
+<text x="${championLabelTextX}" y="${championLabelTextY}" text-anchor="middle" dominant-baseline="middle" fill="${onPrimaryTextColor}" font-size="${championLabelFontSize}" font-weight="${championLabelFontWeight}" font-family="${getCssMonospaceFallback()}">Winner</text>
 <rect x="${championX}" y="${championNameY}" width="${championWidth}" height="${championNameHeight}" rx="${rectRadius}" fill="${winnerColor}" stroke="${winnerStrokeColor}" />
-<text x="${championX + fontNameTextInset}" y="${championTextY}" dominant-baseline="middle" fill="${primaryTextColor}" font-size="${championTextFontSize}" font-family="${getSvgFontFamily(champion)}" clip-path="url(#${championClipId})">${escapeXml(champion.family)}</text>
+<text x="${championX + fontNameTextInset}" y="${championTextY}" dominant-baseline="middle" fill="${primaryTextColor}" font-size="${championTextFontSize}" font-family="${getSvgFontFamily(champion)}" clip-path="url(#${championClipId})">${escapeXml(getFontDisplayName(champion))}</text>
 </g>`);
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
@@ -849,7 +855,7 @@ function createDoubleEliminationTournamentSvg() {
     )
     .concat({
       font: currentBracket.winner,
-      label: currentBracket.winner.family
+      label: getFontDisplayName(currentBracket.winner)
     });
   const fontNameMeasurements = measuredFontLabels.map(({ font, label }) =>
     measureSvgTextBounds(label, measuredLabelFontSize, [
@@ -1199,7 +1205,7 @@ function createDoubleEliminationTournamentSvg() {
     }
 
     output.push(
-      `<text x="${x + fontNameTextInset}" y="${topPlayerY - matchNumberLabelGap}" fill="${primaryTextColor}" font-size="${labelFontSize}" font-weight="${labelFontWeight}" font-family="ui-monospace, monospace">${escapeXml(matchNumberLabel)}</text>`
+      `<text x="${x + fontNameTextInset}" y="${topPlayerY - matchNumberLabelGap}" fill="${primaryTextColor}" font-size="${labelFontSize}" font-weight="${labelFontWeight}" font-family="${getCssMonospaceFallback()}">${escapeXml(matchNumberLabel)}</text>`
     );
   }
 
@@ -1246,7 +1252,7 @@ function createDoubleEliminationTournamentSvg() {
   sectionLayouts.forEach((section) => {
     output.push(`<g>
 <rect x="${padding}" y="${section.y}" width="${width}" height="${sectionLabelHeight}" rx="${rectRadius}" fill="${winnerStrokeColor}" />
-<text x="${padding + fontNameTextInset}" y="${section.y + sectionLabelHeight / midpointDivisor}" dominant-baseline="middle" fill="${onPrimaryTextColor}" font-size="${labelFontSize}" font-weight="${labelFontWeight}" font-family="ui-monospace, monospace">${section.label}</text>
+<text x="${padding + fontNameTextInset}" y="${section.y + sectionLabelHeight / midpointDivisor}" dominant-baseline="middle" fill="${onPrimaryTextColor}" font-size="${labelFontSize}" font-weight="${labelFontWeight}" font-family="${getCssMonospaceFallback()}">${section.label}</text>
 </g>`);
 
     section.rounds.forEach((round, roundIndex) => {
@@ -1335,9 +1341,9 @@ function createDoubleEliminationTournamentSvg() {
       );
       output.push(`<g>
 <rect x="${championX}" y="${championLabelY}" width="${championWidth}" height="${championLabelHeight}" rx="${rectRadius}" fill="${winnerStrokeColor}" />
-<text x="${championLabelTextX}" y="${championLabelTextY}" text-anchor="middle" dominant-baseline="middle" fill="${onPrimaryTextColor}" font-size="${championLabelFontSize}" font-weight="${championLabelFontWeight}" font-family="ui-monospace, monospace">Winner</text>
+<text x="${championLabelTextX}" y="${championLabelTextY}" text-anchor="middle" dominant-baseline="middle" fill="${onPrimaryTextColor}" font-size="${championLabelFontSize}" font-weight="${championLabelFontWeight}" font-family="${getCssMonospaceFallback()}">Winner</text>
 <rect x="${championX}" y="${championNameY}" width="${championWidth}" height="${championNameHeight}" rx="${rectRadius}" fill="${winnerColor}" stroke="${winnerStrokeColor}" />
-<text x="${championX + fontNameTextInset}" y="${championTextY}" dominant-baseline="middle" fill="${primaryTextColor}" font-size="${championTextFontSize}" font-family="${getSvgFontFamily(currentBracket.winner)}" clip-path="url(#${championClipId})">${escapeXml(currentBracket.winner.family)}</text>
+<text x="${championX + fontNameTextInset}" y="${championTextY}" dominant-baseline="middle" fill="${primaryTextColor}" font-size="${championTextFontSize}" font-family="${getSvgFontFamily(currentBracket.winner)}" clip-path="url(#${championClipId})">${escapeXml(getFontDisplayName(currentBracket.winner))}</text>
 </g>`);
     }
   });
@@ -1464,7 +1470,7 @@ function chooseWinner(player, button) {
                   font,
                   $fontOpenTypeFeatures,
                   $fontLigatures
-                )}">{font.family}</span>
+                )}">{getFontDisplayName(font)}</span>
             </label>
           {/each}
         </div>
@@ -1569,25 +1575,27 @@ function chooseWinner(player, button) {
               $fontOpenTypeFeatures,
               $fontLigatures
             )}">
-            {currentBracket?.winner.family}
+            {getFontDisplayName(currentBracket?.winner)}
           </div>
-          <div class="variant-soft-surface btn-group self-center">
-            <a href="{currentBracket?.winner.siteUrl}" target="_blank">
-              <IconExternalLink size="24" />
-              <span class="hidden 2xl:block"
-                >Visit {currentBracket?.winner.family}</span>
-            </a>
-            <a href="{currentBracket?.winner.downloadUrl}">
-              <IconDownload size="24" />
-              <span class="hidden 2xl:block"
-                >Download {currentBracket?.winner.family}</span>
-            </a>
-            <a
-              href="{getFontPath(currentBracket?.winner.family)}">
-              <IconMaximize size="24" />
-              <span class="hidden 2xl:block">View Font Detail</span>
-            </a>
-          </div>
+          {#if !currentBracket?.winner.isSystemFont}
+            <div class="variant-soft-surface btn-group self-center">
+              <a href="{currentBracket?.winner.siteUrl}" target="_blank">
+                <IconExternalLink size="24" />
+                <span class="hidden 2xl:block"
+                  >Visit {getFontDisplayName(currentBracket?.winner)}</span>
+              </a>
+              <a href="{currentBracket?.winner.downloadUrl}">
+                <IconDownload size="24" />
+                <span class="hidden 2xl:block"
+                  >Download {getFontDisplayName(currentBracket?.winner)}</span>
+              </a>
+              <a
+                href="{getFontPath(currentBracket?.winner.family)}">
+                <IconMaximize size="24" />
+                <span class="hidden 2xl:block">View Font Detail</span>
+              </a>
+            </div>
+          {/if}
           <h4 class="h4">
             For mastering the art of bézier curve pageantry, where zeros, arrows
             and curly brackets stand heroic in a 10-hour coding crusade! For

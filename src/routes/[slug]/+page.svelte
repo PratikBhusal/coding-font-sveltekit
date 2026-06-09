@@ -13,7 +13,7 @@ import {
   Controls,
   MonacoEditor
 } from '$lib';
-import { getFontStyle } from '$lib/fontFeatures';
+import { getFontDisplayName, getFontStyle } from '$lib/fontFeatures';
 import {
   selectedTheme,
   fontSize,
@@ -47,7 +47,9 @@ $: if (currentFont && sidebarComponent) {
 
 $: if ($searchTerm) {
   fonts = data.fonts.filter((font) =>
-    font.family.toLowerCase().includes($searchTerm.toLowerCase())
+    [font.family, getFontDisplayName(font)].some((fontName) =>
+      fontName.toLowerCase().includes($searchTerm.toLowerCase())
+    )
   );
 } else {
   fonts = data.fonts;
@@ -89,16 +91,18 @@ function clearComparison() {
             <a class="anchor" href="{base}/browse">Browse</a>
           </li>
           <li class="crumb-separator" aria-hidden>&rsaquo;</li>
-          <li>{currentFont?.family}</li>
+          <li>{getFontDisplayName(currentFont)}</li>
         </ol>
-        <h2 class="h2">{currentFont.family}</h2>
+        <h2 class="h2">{getFontDisplayName(currentFont)}</h2>
         <p>{`${currentFont?.variants.length} styles`}</p>
-        <div class="flex flex-wrap gap-2">
-          {#each currentFont.variants as variant (variant)}
-            <a href="{currentFont.files[variant]}" target="_blank" class="code"
-              >{variant}</a>
-          {/each}
-        </div>
+        {#if !currentFont.isSystemFont}
+          <div class="flex flex-wrap gap-2">
+            {#each currentFont.variants as variant (variant)}
+              <a href="{currentFont.files[variant]}" target="_blank" class="code"
+                >{variant}</a>
+            {/each}
+          </div>
+        {/if}
         <div
           style="{getFontStyle(
             currentFont,
@@ -129,7 +133,8 @@ function clearComparison() {
             <span>{`Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz`}</span>
           </div>
         {/if}
-        <div class="table-container !overflow-x-hidden !rounded-none">
+        {#if !currentFont.isSystemFont}
+          <div class="table-container !overflow-x-hidden !rounded-none">
           <table
             class="table table-compact !whitespace-nowrap !rounded-none text-left">
             <tbody>
@@ -155,7 +160,8 @@ function clearComparison() {
               </tr>
             </tbody>
           </table>
-        </div>
+          </div>
+        {/if}
       </div>
       <hr />
       <SearchBar />
@@ -176,7 +182,7 @@ function clearComparison() {
                   $fontLigatures
                 )}"
                 class="max-w-[9rem] truncate !whitespace-nowrap"
-                >{font.family}</td>
+                >{getFontDisplayName(font)}</td>
               <td class="hidden md:table-cell">
                 <button
                   class="variant-ringed-surface btn btn-sm"
@@ -193,12 +199,14 @@ function clearComparison() {
               <td>
                 <div
                   class="variant-ringed-surface btn-group [&>*+*]:border-surface-400-500-token">
-                  <a href="{font?.siteUrl}" target="_blank" class="!p-2 !pl-3">
-                    <IconExternalLink size="16" />
-                  </a>
-                  <a href="{font?.downloadUrl}" class="!p-2 !pr-3">
-                    <IconDownload size="16" />
-                  </a>
+                  {#if !font.isSystemFont}
+                    <a href="{font?.siteUrl}" target="_blank" class="!p-2 !pl-3">
+                      <IconExternalLink size="16" />
+                    </a>
+                    <a href="{font?.downloadUrl}" class="!p-2 !pr-3">
+                      <IconDownload size="16" />
+                    </a>
+                  {/if}
                 </div>
               </td>
             </tr>

@@ -14,7 +14,7 @@ import {
   IconMaximize,
   IconBoxAlignRightFilled
 } from '$lib';
-import { getFontStyle } from './fontFeatures';
+import { getFontDisplayName, getFontStyle } from './fontFeatures';
 import type { CodingFont } from './codingFonts';
 
 export let fonts: CodingFont[] = [];
@@ -51,7 +51,7 @@ function getFontPath(family: string) {
               $fontLigatures
             )}"
             class="max-w-[9rem] truncate !whitespace-nowrap"
-            >{shouldShowName ? font.family : 'ABC abc 123'}</td>
+            >{shouldShowName ? getFontDisplayName(font) : 'ABC abc 123'}</td>
           <td class="hidden md:table-cell">
             <button
               class="variant-ringed-surface btn btn-sm"
@@ -66,12 +66,14 @@ function getFontPath(family: string) {
           <td>
             <div
               class="variant-ringed-surface btn-group [&>*+*]:border-surface-400-500-token">
-              <a href="{font?.siteUrl}" target="_blank" class="!p-2 !pl-3">
-                <IconExternalLink size="16" />
-              </a>
-              <a href="{font?.downloadUrl}" class="!p-2">
-                <IconDownload size="16" />
-              </a>
+              {#if !font.isSystemFont}
+                <a href="{font?.siteUrl}" target="_blank" class="!p-2 !pl-3">
+                  <IconExternalLink size="16" />
+                </a>
+                <a href="{font?.downloadUrl}" class="!p-2">
+                  <IconDownload size="16" />
+                </a>
+              {/if}
               <a
                 href="{getFontPath(font.family)}"
                 class="!p-2 !pr-3">

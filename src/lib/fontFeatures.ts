@@ -27,6 +27,30 @@ export function getFontFeatures(
     .join(', ');
 }
 
+export function getFontDisplayName(
+  font?: Pick<CodingFont, 'family' | 'displayName'>
+) {
+  return font?.displayName ?? font?.family ?? '';
+}
+
+export function getCssMonospaceFallback() {
+  return 'ui-monospace, monospace';
+}
+
+export function getCssFontFamily(font?: Pick<CodingFont, 'family'>) {
+  if (!font?.family) {
+    return '';
+  }
+
+  if (font.family === 'ui-monospace') {
+    return getCssMonospaceFallback();
+  }
+
+  const family = font.family.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+  return `'${family}', ${getCssMonospaceFallback()}`;
+}
+
 export function getFontStyle(
   font?: FontFeatureConfig,
   enableOpenTypeFeatures = true,
@@ -38,7 +62,7 @@ export function getFontStyle(
     enableLigatureFeatures
   );
   return [
-    font?.family ? `font-family: '${font.family}'` : '',
+    font?.family ? `font-family: ${getCssFontFamily(font)}` : '',
     fontFeatures ? `font-feature-settings: ${fontFeatures}` : ''
   ]
     .filter(Boolean)

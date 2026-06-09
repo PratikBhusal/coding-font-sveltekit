@@ -19,6 +19,11 @@ import MonacoEditor from './MonacoEditor.svelte';
 import { monacoThemeNames, monacoThemes } from './monacoThemes';
 import codingFonts from './codingFonts';
 import type { CodingFont } from './codingFonts';
+import {
+  getCssFontFamily,
+  getCssMonospaceFallback,
+  getFontDisplayName
+} from './fontFeatures';
 
 import {
   createGame,
@@ -52,6 +57,9 @@ export {
   monacoThemes,
   /* Coding Fonts Metadata */
   codingFonts,
+  getCssFontFamily,
+  getCssMonospaceFallback,
+  getFontDisplayName,
   /* Tournament Game Factory */
   createGame,
   createConfetti,

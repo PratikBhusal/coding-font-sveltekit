@@ -9,6 +9,7 @@ import {
   Controls,
   MonacoEditor
 } from '$lib';
+import { getFontDisplayName } from '$lib/fontFeatures';
 import {
   selectedTheme,
   fontSize,
@@ -25,12 +26,17 @@ export let data: { fonts: CodingFont[] };
 let { fonts } = data;
 
 function getFontByFamilyName(familyName: string) {
-  return fonts.find((font) => font.family === familyName);
+  return data.fonts.find((font) => font.family === familyName);
 }
+
+$: currentFont = getFontByFamilyName($fontFamily) ?? data.fonts[0];
+$: comparisonFont = getFontByFamilyName($fontFamilyRight);
 
 $: if ($searchTerm) {
   fonts = data.fonts.filter((font) =>
-    font.family.toLowerCase().includes($searchTerm.toLowerCase())
+    [font.family, getFontDisplayName(font)].some((fontName) =>
+      fontName.toLowerCase().includes($searchTerm.toLowerCase())
+    )
   );
 } else {
   fonts = data.fonts;
@@ -54,26 +60,26 @@ $: if ($searchTerm) {
   </svelte:fragment>
   <div
     class="bg-surface-50-900-token grid h-full grid-cols-1 gap-4 p-4 md:grid-cols-2">
-    <div class="flex flex-col gap-4" class:col-span-2="{!$fontFamilyRight}">
-      <FontHeader font="{getFontByFamilyName($fontFamily)}" showNames="{true}" />
-      <MonacoEditor
-        class="overflow-hidden rounded-container-token"
-        fontSize="{$fontSize}"
-        fontFamily="{$fontFamily}"
-        fontLigatures="{$fontLigatures}"
-        fontOpenTypeFeatures="{$fontOpenTypeFeatures}"
-        language="{$editorLanguage}"
-        themeName="{$selectedTheme}" />
-    </div>
-    {#if $fontFamilyRight}
-      <div class="relative hidden flex-col gap-4 md:flex">
-        <FontHeader
-          font="{getFontByFamilyName($fontFamilyRight)}"
-          showNames="{true}" />
+    {#if currentFont}
+      <div class="flex flex-col gap-4" class:col-span-2="{!comparisonFont}">
+        <FontHeader font="{currentFont}" showNames="{true}" />
         <MonacoEditor
           class="overflow-hidden rounded-container-token"
           fontSize="{$fontSize}"
-          fontFamily="{$fontFamilyRight}"
+          fontFamily="{currentFont.family}"
+          fontLigatures="{$fontLigatures}"
+          fontOpenTypeFeatures="{$fontOpenTypeFeatures}"
+          language="{$editorLanguage}"
+          themeName="{$selectedTheme}" />
+      </div>
+    {/if}
+    {#if comparisonFont}
+      <div class="relative hidden flex-col gap-4 md:flex">
+        <FontHeader font="{comparisonFont}" showNames="{true}" />
+        <MonacoEditor
+          class="overflow-hidden rounded-container-token"
+          fontSize="{$fontSize}"
+          fontFamily="{comparisonFont.family}"
           fontLigatures="{$fontLigatures}"
           fontOpenTypeFeatures="{$fontOpenTypeFeatures}"
           language="{$editorLanguage}"

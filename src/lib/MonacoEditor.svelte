@@ -7,7 +7,7 @@ import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
 import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
 import { monacoThemes } from './monacoThemes';
 import codingFonts from './codingFonts';
-import { getFontFeatures } from './fontFeatures';
+import { getCssFontFamily, getFontFeatures } from './fontFeatures';
 
 export let fontFamily = 'JetBrains Mono';
 export let fontSize = 20;
@@ -108,6 +108,7 @@ $: fontFeatures = getFontFeatures(
   fontOpenTypeFeatures,
   fontLigatures
 );
+$: monacoFontFamily = getCssFontFamily(currentFont) || `'${fontFamily}', monospace`;
 $: monacoFontLigatures = fontFeatures || fontLigatures;
 
 onMount(async () => {
@@ -136,7 +137,7 @@ onMount(async () => {
     value: code || sampleCodeByLanguage[language] || sampleCodeByLanguage.javascript,
     language: language,
     theme: 'vs-dark',
-    fontFamily: `'${fontFamily}', monospace`,
+    fontFamily: monacoFontFamily,
     fontSize: fontSize,
     fontLigatures: monacoFontLigatures,
     automaticLayout: true,
@@ -156,7 +157,7 @@ $: if (editor) {
 }
 
 $: if (editor) {
-  editor.updateOptions({ fontFamily: `'${fontFamily}', monospace` });
+  editor.updateOptions({ fontFamily: monacoFontFamily });
 }
 
 $: if (editor) {
