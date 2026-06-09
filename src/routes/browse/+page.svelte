@@ -29,6 +29,10 @@ function getFontByFamilyName(familyName: string) {
   return data.fonts.find((font) => font.family === familyName);
 }
 
+function clearComparison() {
+  $fontFamilyRight = '';
+}
+
 $: currentFont = getFontByFamilyName($fontFamily) ?? data.fonts[0];
 $: comparisonFont = getFontByFamilyName($fontFamilyRight);
 
@@ -65,7 +69,11 @@ $: if ($searchTerm) {
     {#if currentFont}
       <div
         class="flex flex-col gap-4 {!comparisonFont ? 'md:col-span-2' : ''}">
-        <FontHeader font="{currentFont}" showNames="{true}" />
+        <FontHeader
+          font="{currentFont}"
+          showNames="{true}"
+          showMaximize="{Boolean(comparisonFont)}"
+          onMaximize="{clearComparison}" />
         <MonacoEditor
           class="overflow-hidden rounded-container-token"
           fontSize="{$fontSize}"
@@ -78,7 +86,11 @@ $: if ($searchTerm) {
     {/if}
     {#if comparisonFont}
       <div class="relative flex flex-col gap-4">
-        <FontHeader font="{comparisonFont}" showNames="{true}" />
+        <FontHeader
+          font="{comparisonFont}"
+          showNames="{true}"
+          showMaximize="{true}"
+          onMaximize="{clearComparison}" />
         <MonacoEditor
           class="overflow-hidden rounded-container-token"
           fontSize="{$fontSize}"
@@ -87,11 +99,6 @@ $: if ($searchTerm) {
           fontOpenTypeFeatures="{$fontOpenTypeFeatures}"
           language="{$editorLanguage}"
           themeName="{$selectedTheme}" />
-        <button
-          class="variant-filled-surface btn absolute bottom-4 self-center"
-          on:click="{() => {
-            $fontFamilyRight = '';
-          }}">Clear Comparison</button>
       </div>
     {/if}
   </div>

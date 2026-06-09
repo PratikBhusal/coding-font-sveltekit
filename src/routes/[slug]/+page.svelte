@@ -224,7 +224,11 @@ function clearComparison() {
       : 'md:grid-cols-2'}">
     <div
       class="flex flex-col gap-4 {!$fontFamilyRight ? 'md:col-span-2' : ''}">
-      <FontHeader font="{currentFont}" showNames="{true}" />
+      <FontHeader
+        font="{currentFont}"
+        showNames="{true}"
+        showMaximize="{Boolean($fontFamilyRight)}"
+        onMaximize="{clearComparison}" />
       <MonacoEditor
         class="overflow-hidden rounded-container-token"
         fontSize="{$fontSize}"
@@ -238,7 +242,9 @@ function clearComparison() {
       <div class="relative flex flex-col gap-4">
         <FontHeader
           font="{getFontByFamilyName($fontFamilyRight)}"
-          showNames="{true}" />
+          showNames="{true}"
+          showMaximize="{true}"
+          onMaximize="{clearComparison}" />
         <MonacoEditor
           class="overflow-hidden rounded-container-token"
           fontSize="{$fontSize}"
@@ -247,9 +253,6 @@ function clearComparison() {
           fontOpenTypeFeatures="{$fontOpenTypeFeatures}"
           language="{$editorLanguage}"
           themeName="{$selectedTheme}" />
-        <button
-          class="variant-filled-surface btn absolute bottom-10 self-center"
-          on:click="{clearComparison}">Clear Comparison</button>
       </div>
     {/if}
   </div>

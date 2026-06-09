@@ -7,6 +7,8 @@ import type { CodingFont } from './codingFonts';
 
 export let font: CodingFont;
 export let showNames: boolean | undefined = undefined;
+export let showMaximize = true;
+export let onMaximize: ((font: CodingFont) => void) | undefined = undefined;
 
 $: fontPath = `${base}/${encodeURIComponent(font.family.replace(/\s+/g, ''))}`;
 $: shouldShowName = showNames ?? $showName;
@@ -21,8 +23,10 @@ $: fontDisplayName = getFontDisplayName(font);
       <a
         href="{fontPath}"
         class="h3 truncate whitespace-nowrap hover:underline">{fontDisplayName}</a>
-      <div
-        class="variant-ringed-surface btn-group [&>*+*]:border-surface-400-500-token">
+    {/if}
+    <div
+      class="variant-ringed-surface btn-group [&>*+*]:border-surface-400-500-token">
+      {#if !font.isSystemFont}
         <a href="{font.siteUrl}" target="_blank">
           <IconExternalLink size="24" />
           <span class="hidden 2xl:block">Visit {fontDisplayName}</span>
@@ -31,10 +35,16 @@ $: fontDisplayName = getFontDisplayName(font);
           <IconDownload size="24" />
           <span class="hidden 2xl:block">Download {fontDisplayName}</span>
         </a>
-        <a href="{fontPath}">
+      {/if}
+      {#if showMaximize}
+        <a
+          href="{fontPath}"
+          on:click="{() => {
+            onMaximize?.(font);
+          }}">
           <IconMaximize size="24" />
         </a>
-      </div>
-    {/if}
+      {/if}
+    </div>
   </div>
 {/if}
