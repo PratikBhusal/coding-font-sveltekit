@@ -216,7 +216,7 @@ function clearComparison() {
     </Sidebar>
   </svelte:fragment>
   <svelte:fragment slot="pageHeader">
-    <Controls />
+    <Controls showNameEnabled="{false}" />
   </svelte:fragment>
   <div
     class="bg-surface-50-900-token grid h-full grid-cols-1 gap-4 p-4 {$fontFamilyRight
@@ -224,7 +224,7 @@ function clearComparison() {
       : 'md:grid-cols-2'}">
     <div
       class="flex flex-col gap-4 {!$fontFamilyRight ? 'md:col-span-2' : ''}">
-      <FontHeader font="{currentFont}" />
+      <FontHeader font="{currentFont}" showNames="{true}" />
       <MonacoEditor
         class="overflow-hidden rounded-container-token"
         fontSize="{$fontSize}"
@@ -236,7 +236,9 @@ function clearComparison() {
     </div>
     {#if $fontFamilyRight}
       <div class="relative flex flex-col gap-4">
-        <FontHeader font="{getFontByFamilyName($fontFamilyRight)}" />
+        <FontHeader
+          font="{getFontByFamilyName($fontFamilyRight)}"
+          showNames="{true}" />
         <MonacoEditor
           class="overflow-hidden rounded-container-token"
           fontSize="{$fontSize}"
