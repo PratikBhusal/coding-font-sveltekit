@@ -31,7 +31,7 @@ export const fontOpenTypeFeatures: Writable<boolean> = localStorageStore(
 
 export const editorLanguage: Writable<string> = localStorageStore(
   'editorLanguage',
-  'javascript'
+  'typescript'
 );
 
 export const searchTerm: Writable<string> = localStorageStore('searchTerm', '');

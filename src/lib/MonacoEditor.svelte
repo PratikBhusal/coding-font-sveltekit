@@ -14,11 +14,11 @@ export let fontSize = 20;
 export let fontLigatures = true;
 export let fontOpenTypeFeatures = true;
 export let themeName = 'monokai';
-export let language = 'javascript';
+export let language = 'typescript';
 export let code = '';
 
 const sampleCodeByLanguage = {
-  javascript: `// This is a single-line comment example
+  typescript: `// This is a single-line comment example
 
 /*
  * 1234567890
@@ -29,33 +29,35 @@ const sampleCodeByLanguage = {
  * the quick brown fox jumps over the lazy dog
  */
 
-// Defining a function using arrow function syntax
-const isMultipleOf = (number, multiple) => {
-  if (number === 0) {
+function isMultipleOf(num: number, multiple: number): void {
+  if (num === 0) {
     console.log('0 is a neutral element in multiplication.');
     return;
   }
 
   for (let i = 1; i <= 10; i++) {
-    if ((number * i) % multiple === 0) {
+    const value = num * i;
+
+    if (value % multiple === 0) {
       console.log(
-        'The number ' + number * i + ' is a multiple of ' + multiple + '.'
+        'The number ' + value + ' is a multiple of ' + multiple + '.'
       );
     } else {
       console.log(
-        'The number ' + number * i + ' is not a multiple of ' + multiple + '.'
+        'The number ' + value + ' is not a multiple of ' + multiple + '.'
       );
     }
   }
-};
+}
 
 // Distinguishing between 0, o, O, l, 1, I in variable names and values
-let oO0 = 0; // Zero
-let l1I = 1; // One
+const oO0: number = 0; // Zero
+const l1I: number = 1; // One
 
 // Calling the function with different parameters
 isMultipleOf(oO0, l1I); // Output related to zero
-isMultipleOf(l1I, oO0); // Output related to one`,
+isMultipleOf(l1I, oO0); // Output related to one
+export {};`,
   python: `import os
 import sublime
 from pathlib import PurePath
@@ -134,7 +136,10 @@ onMount(async () => {
     monaco.editor.defineTheme(theme.slug, theme.themeData);
   });
   editor = monaco.editor.create(editorContainer, {
-    value: code || sampleCodeByLanguage[language] || sampleCodeByLanguage.javascript,
+    value:
+      code ||
+      sampleCodeByLanguage[language] ||
+      sampleCodeByLanguage.typescript,
     language: language,
     theme: 'vs-dark',
     fontFamily: monacoFontFamily,
@@ -169,7 +174,9 @@ $: if (editor && monaco) {
   if (model) {
     monaco.editor.setModelLanguage(model, language);
     if (!code) {
-      model.setValue(sampleCodeByLanguage[language] || sampleCodeByLanguage.javascript);
+      model.setValue(
+        sampleCodeByLanguage[language] || sampleCodeByLanguage.typescript
+      );
     }
   }
 }

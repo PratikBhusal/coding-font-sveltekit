@@ -23,7 +23,7 @@ const sortedMonacoThemes = monacoThemeNames.sort((a, b) => {
 });
 
 const editorLanguages = [
-  { id: 'javascript', displayName: 'JavaScript' },
+  { id: 'typescript', displayName: 'TypeScript' },
   { id: 'python', displayName: 'Python' }
 ];
 
