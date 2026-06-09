@@ -4,7 +4,7 @@ import { TournamentEliminationMode } from './game';
 
 export const selectedTheme: Writable<string> = localStorageStore(
   'selectedTheme',
-  'cobalt'
+  'brilliance-black'
 );
 
 export const fontSize: Writable<number> = localStorageStore('fontSize', 20);
