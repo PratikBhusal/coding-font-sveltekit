@@ -1,6 +1,29 @@
 import { writable, type Writable } from 'svelte/store';
 import { localStorageStore } from '@skeletonlabs/skeleton';
 import { TournamentEliminationMode } from './game';
+import type { CodingFont } from './codingFonts';
+
+export type SavedTournamentMatch = {
+  players?: CodingFont[];
+  winner?: CodingFont | null;
+  loser?: CodingFont | null;
+};
+
+export type SavedTournamentResult = {
+  version: 1;
+  completedAt: string;
+  game: {
+    eliminationMode: TournamentEliminationMode;
+    rounds: SavedTournamentMatch[][];
+    winnersRounds?: SavedTournamentMatch[][];
+    losersRounds?: SavedTournamentMatch[][];
+    finalRounds?: SavedTournamentMatch[][];
+  };
+  currentBracket: {
+    winner: CodingFont;
+  };
+  totalPlayableMatches: number;
+};
 
 export const selectedTheme: Writable<string> = localStorageStore(
   'selectedTheme',
@@ -55,3 +78,6 @@ export const tournamentEliminationMode: Writable<TournamentEliminationMode> =
     'tournamentEliminationMode',
     TournamentEliminationMode.Double
   );
+
+export const savedTournamentResult: Writable<SavedTournamentResult | null> =
+  localStorageStore('savedTournamentResult', null);

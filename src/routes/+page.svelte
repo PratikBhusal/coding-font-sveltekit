@@ -35,7 +35,9 @@ import {
   menuOpen,
   fontFamilyRight,
   tournamentFontFamilies,
-  tournamentEliminationMode
+  tournamentEliminationMode,
+  savedTournamentResult,
+  type SavedTournamentResult
 } from '$lib/store';
 import type { CodingFont } from '$lib';
 
@@ -111,7 +113,12 @@ onMount(async () => {
   }
 
   await tick();
-  startGame();
+
+  if ($savedTournamentResult) {
+    restoreSavedTournamentResult($savedTournamentResult);
+  } else {
+    startGame();
+  }
 
   function handleKeydown(event) {
     if (currentBracket?.players?.length) {
@@ -136,6 +143,8 @@ function startGame(closeSidebar = false) {
     return;
   }
 
+  $savedTournamentResult = null;
+
   // Capture old game state before replacing it so
   // the first start is not treated as a restart.
   const isRestarting = Boolean(game);
@@ -151,6 +160,13 @@ function startGame(closeSidebar = false) {
   if (isRestarting && closeSidebar) {
     $menuOpen = false;
   }
+}
+
+function restoreSavedTournamentResult(savedResult: SavedTournamentResult) {
+  game = savedResult.game;
+  currentBracket = savedResult.currentBracket;
+  totalPlayableMatches = savedResult.totalPlayableMatches;
+  $showName = true;
 }
 
 function selectAllTournamentFonts() {
@@ -1387,6 +1403,13 @@ function chooseWinner(player, button) {
   currentBracket = game.setWinner(player);
   game = game;
   if (currentBracket?.winner) {
+    $savedTournamentResult = {
+      version: 1,
+      completedAt: new Date().toISOString(),
+      game: JSON.parse(JSON.stringify(game)),
+      currentBracket: JSON.parse(JSON.stringify(currentBracket)),
+      totalPlayableMatches
+    };
     createConfetti();
     $showName = true;
   } else {
